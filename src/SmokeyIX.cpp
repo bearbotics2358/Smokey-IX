@@ -48,7 +48,7 @@ void SmokeyIX::TeleopInit()
 
 void SmokeyIX::TeleopPeriodic()
 {
-
+	a_Tank.Update(a_Joystick,a_Joystick2);
 }
 
 void SmokeyIX::TestInit()
@@ -60,7 +60,8 @@ void SmokeyIX::TestInit()
 void SmokeyIX::TestPeriodic()
 {
 	a_Tank.Update(a_Joystick, a_Joystick2);
-	SmartDashboard::PutNumber("Current A", a_PDP.GetCurrent(0));
+
+	SmartDashboard::PutNumber("Current A", a_PDP.GetCurrent(0)); // Not actually errors- Eclipse is just mad
 	SmartDashboard::PutNumber("Current B", a_PDP.GetCurrent(1));
 	SmartDashboard::PutNumber("Current C", a_PDP.GetCurrent(2));
 	SmartDashboard::PutNumber("Current D", a_PDP.GetCurrent(3));

@@ -16,10 +16,10 @@
 
 #define PCM_PORT 2
 
-#define BACK_LEFT_ONE 10
+#define BACK_LEFT_ONE 13
 #define BACK_LEFT_TWO 11
 #define BACK_RIGHT_ONE 12
-#define BACK_RIGHT_TWO 13
+#define BACK_RIGHT_TWO 10
 #define WINCH_ONE 4
 #define WINCH_TWO 5
 #define COLLECTOR_ONE 6
