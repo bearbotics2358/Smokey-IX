@@ -1,6 +1,6 @@
 #pragma once
 
-#include <WPIlib.h>
+#include <WPILib.h>
 #include "Prefs.h"
 #include "ShifterController.h"
 
