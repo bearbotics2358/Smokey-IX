@@ -23,7 +23,6 @@ JrimmyGyro::JrimmyGyro(Port port):
 		I2C(port, 0x68)
 {
 	lastUpdate = 0;
-	angle = 0;
 	Init();
 	//m_i2c = new I2C((I2C::Port)port, kAddress);
 	// int ret = Read(0, 1, Buff);
@@ -179,9 +178,9 @@ int JrimmyGyro::GetTemp() {
 	return temperature;
 }
 
-double JrimmyGyro::GetAngle()
+double PiGyro::GetAngle(int xyz)
 {
-	return angle;
+	return angle[xyz];
 }
 
 void JrimmyGyro::Zero() {

@@ -42,6 +42,7 @@ public:
 	virtual double GetZ();
 	virtual int GetTemp();
 	virtual double GetAngle();
+	double GetAngle(int xyz);
 	void Zero();
 
 	virtual std::string GetSmartDashboardType();
@@ -53,7 +54,7 @@ private:
 	double AxisX;
 	double AxisY;
 	double AxisZ;
-	double angle;
-	double angleBias;
+	double angle[3];
+	double angleBias[3];
 	double lastUpdate;
 };
