@@ -1,3 +1,8 @@
+/* JrimmyGyro.cpp
+
+ */
+
+
 #include <Prefs.h>
 #include "JrimmyGyro.h"
 #include <I2C.h>
@@ -19,7 +24,7 @@ JrimmyGyro::JrimmyGyro(Port port):
 {
 	lastUpdate = 0;
 	angle = 0;
-	// Init();
+	Init();
 	//m_i2c = new I2C((I2C::Port)port, kAddress);
 	// int ret = Read(0, 1, Buff);
 	// printf("Jake Buff: %2.2X\n", Buff[0] & 0x00ff);
@@ -39,6 +44,15 @@ JrimmyGyro::~JrimmyGyro()
 	//m_i2c = NULL;
 }
 
+void JrimmyGyro::WaitForValues()
+{
+	uint8_t stat;
+
+	do {
+		Read(kIntStatus, 1, &stat);
+	} while(!(stat & 1));
+}
+
 void JrimmyGyro::Init()
 {
 	lastUpdate = 0;
@@ -46,19 +60,48 @@ void JrimmyGyro::Init()
 	Write(kSampleRateDivider, 9);
 	Write(kPowerMgmRegister, 1);
 	Write(kIntCfg, 1);
-	uint8_t stat;
 
-	angleBias = 0;
-	for(int i = 0; i < 10; i++) {
-		do {
-			Read(kIntStatus, 1, &stat);
-		} while(!(stat & 1));
-		Update();
-		angleBias += XAxis;
+	Cal();
+}
+
+void JrimmyGyro::Cal()
+{
+	// get gyro drift biases
+	int i;
+	double tstart = Timer::GetFPGATimestamp();
+	while(Timer::GetFPGATimestamp() < tstart + 0.100) {
+		// wait 100 ms for readings 
 	}
-	angleBias /= 10;
-	// SmartDashboard::PutNumber("Angle Bias", angleBias);
-	angle = 0;
+	
+	for(i = 0; i < 3; i++) {
+		angleBias[i] = 0;
+	}
+
+	// throw out first reading, it is 0
+	WaitForValues();
+	Update();
+
+	for(int i = 0; i < 10; i++) {
+		WaitForValues();
+		Update();
+		angleBias[0] += XAxis;
+		angleBias[1] += YAxis;
+		angleBias[2] += ZAxis;
+
+		// printf("XAxis: %6.2lf  ", XAxis);
+		// printf("YAxis: %6.2lf  ", YAxis);
+		// printf("ZAxis: %6.2lf\n", ZAxis);
+	}
+
+	for(i = 0; i < 3; i++) {
+		angleBias[i] /= 10;
+		angle[i] = 0;
+	}
+	// printf("Bias read time %6.3lf\n", GetTime() - tstart);
+	// printf("AngleBias: %6.3lf %6.3lf %6.3lf\n", angleBias[0], angleBias[1], angleBias[2]);
+	SmartDashboard::PutNumber("Angle Bias X", angleBias[0]);
+	SmartDashboard::PutNumber("Angle Bias Y", angleBias[1]);
+	SmartDashboard::PutNumber("Angle Bias Z", angleBias[2]);
 }
 
 uint8_t JrimmyGyro::GetReg0()
@@ -103,17 +146,18 @@ void JrimmyGyro::Update()
 	ZAxis = GetReg(kDataRegister + kAxis_Z);
 	ZAxis = ZAxis / 14.375;
 
-	angle += (XAxis - angleBias) * timeDelta;
+	angle[0] += ((XAxis - angleBias[0]) * timeDelta);
+	angle[1] += ((YAxis - angleBias[1]) * timeDelta);
+	angle[2] += ((ZAxis - angleBias[2]) * timeDelta);
 	lastUpdate = time;
 
-	if (angle > 180) {
-		angle -= 180;
+	for(int i = 0; i < 3; i++) {
+		if (angle[i] > 180) {
+			angle[i] -= 180;
+		}	else if (angle[i] < -180) {
+			angle[i] += 180;
+		}
 	}
-
-	else if (angle < -180) {
-		angle += 180;
-	}
-
 }
 
 double JrimmyGyro::GetX()
@@ -131,10 +175,6 @@ double JrimmyGyro::GetZ()
 	return ZAxis;
 }
 
-std::string JrimmyGyro::GetSmartDashboardType() {
-	return "3AxisAccelerometer";
-}
-
 int JrimmyGyro::GetTemp() {
 	return temperature;
 }
@@ -144,6 +184,12 @@ double JrimmyGyro::GetAngle()
 	return angle;
 }
 
-void JrimmyGyro::Reset() {
-	angle = 0;
+void JrimmyGyro::Zero() {
+	for(int i = 0; i < 3; i++) {
+		angle[i] = 0;
+	}
+}
+
+std::string JrimmyGyro::GetSmartDashboardType() {
+	return "3AxisAccelerometer";
 }

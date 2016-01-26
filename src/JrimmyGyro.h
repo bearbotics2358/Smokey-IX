@@ -30,19 +30,21 @@ public:
 	explicit JrimmyGyro(Port port);
 	virtual ~JrimmyGyro();
 
-	// Accelerometer interface
+	// Gyro interface
+	void WaitForValues();
+	virtual void Init();
+	void Cal();
 	uint8_t GetReg0();
+	virtual int16_t GetReg(uint8_t regNum);
+	virtual void Update();
 	virtual double GetX();
 	virtual double GetY();
 	virtual double GetZ();
 	virtual int GetTemp();
-	virtual void Update();
-	virtual int16_t GetReg(uint8_t regNum);
 	virtual double GetAngle();
-	void Reset();
+	void Zero();
 
 	virtual std::string GetSmartDashboardType();
-	virtual void Init();
 
 protected:
 	//I2C* m_i2c;
