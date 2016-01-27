@@ -178,7 +178,7 @@ int JrimmyGyro::GetTemp() {
 	return temperature;
 }
 
-double PiGyro::GetAngle(int xyz)
+double JrimmyGyro::GetAngle(int xyz)
 {
 	return angle[xyz];
 }

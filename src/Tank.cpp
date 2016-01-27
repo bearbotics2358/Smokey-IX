@@ -151,8 +151,5 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 	a_LeftSide.Set(stick2.GetY());
 	a_RightSide.Set(-1.0 * stick.GetY());
 
-
-=======
->>>>>>> 1a304e3a5a18a3cfb9ba5c9ff2e44155354f53aa
 }
 

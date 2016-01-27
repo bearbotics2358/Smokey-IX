@@ -8,6 +8,8 @@
 #include "ShifterController.h"
 #include "Tank.h"
 #include "CanTalonSRX.h"
+#include "JrimmyGyro.h"
+#include "I2C.h"
 
 #ifndef SRC_SMOKEYIX_H_
 #define SRC_SMOKEYIX_H_
@@ -38,13 +40,15 @@ private:
 	CanTalonSRX a_BROne;
 	CanTalonSRX a_BRTwo;
 
-	Victor a_WinchOne;
-	Victor a_WinchTwo;
-	Victor a_CollectorOne;
-	Victor a_CollectorTwo;
-	Victor a_Roller;
+	CanTalonSRX a_Winch;
+	CanTalonSRX a_Finger;
+	CanTalonSRX a_Collector;
+	CanTalonSRX a_Shooter;
+	CanTalonSRX a_Roller;
 
 	DoubleSolenoid a_LeftSol;
+
+	JrimmyGyro a_Gyro;
 
 
 	ShifterController a_Left;

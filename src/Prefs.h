@@ -20,11 +20,11 @@
 #define BACK_LEFT_TWO 11
 #define BACK_RIGHT_ONE 12
 #define BACK_RIGHT_TWO 10
-#define WINCH_ONE 4
-#define WINCH_TWO 5
-#define COLLECTOR_ONE 6
-#define COLLECTOR_TWO 7
-#define ROLLER 8
+#define WINCH 14
+#define FINGER 15
+#define COLLECTOR 16
+#define SHOOTER 17
+#define ROLLER 18
 
 #define LEFT_SOL_PORT_ONE 0
 #define LEFT_SOL_PORT_TWO 1
