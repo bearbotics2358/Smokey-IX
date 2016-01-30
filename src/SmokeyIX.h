@@ -48,7 +48,7 @@ private:
 
 	DoubleSolenoid a_LeftSol;
 
-	JrimmyGyro a_Gyro;
+	// JrimmyGyro a_Gyro;
 
 
 	ShifterController a_Left;

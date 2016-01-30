@@ -21,9 +21,9 @@
 #define BACK_RIGHT_ONE 12
 #define BACK_RIGHT_TWO 10
 #define WINCH 14
-#define FINGER 15
-#define COLLECTOR 16
-#define SHOOTER 17
+#define FINGER 17
+#define COLLECTOR 15
+#define SHOOTER 16
 #define ROLLER 18
 
 #define LEFT_SOL_PORT_ONE 0

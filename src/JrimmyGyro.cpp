@@ -178,9 +178,9 @@ int JrimmyGyro::GetTemp() {
 	return temperature;
 }
 
-double JrimmyGyro::GetAngle(int xyz)
+double JrimmyGyro::GetAngle(int axis = 2)
 {
-	return angle[xyz];
+	return angle[axis];
 }
 
 void JrimmyGyro::Zero() {
