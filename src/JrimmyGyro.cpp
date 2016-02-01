@@ -98,16 +98,16 @@ void JrimmyGyro::Cal()
 	}
 	// printf("Bias read time %6.3lf\n", GetTime() - tstart);
 	// printf("AngleBias: %6.3lf %6.3lf %6.3lf\n", angleBias[0], angleBias[1], angleBias[2]);
-	SmartDashboard::PutNumber("Angle Bias X", angleBias[0]);
-	SmartDashboard::PutNumber("Angle Bias Y", angleBias[1]);
-	SmartDashboard::PutNumber("Angle Bias Z", angleBias[2]);
+	// SmartDashboard::PutNumber("Angle Bias X", angleBias[0]);
+	// SmartDashboard::PutNumber("Angle Bias Y", angleBias[1]);
+	// SmartDashboard::PutNumber("Angle Bias Z", angleBias[2]);
 }
 
 uint8_t JrimmyGyro::GetReg0()
 {
 	uint8_t id;
 	Read(0, 1, &id);
-	SmartDashboard::PutNumber("Gyro ID", id);
+	// SmartDashboard::PutNumber("Gyro ID", id);
 
 	return id;
 }
@@ -151,10 +151,10 @@ void JrimmyGyro::Update()
 	lastUpdate = time;
 
 	for(int i = 0; i < 3; i++) {
-		if (angle[i] > 180) {
-			angle[i] -= 180;
-		}	else if (angle[i] < -180) {
-			angle[i] += 180;
+		if (angle[i] > 360) {
+			angle[i] -= 360;
+		}	else if (angle[i] < 0) {
+			angle[i] += 360;
 		}
 	}
 }
@@ -178,9 +178,9 @@ int JrimmyGyro::GetTemp() {
 	return temperature;
 }
 
-double JrimmyGyro::GetAngle(int axis = 2)
+double JrimmyGyro::GetAngle(int xyz)
 {
-	return angle[axis];
+	return angle[xyz];
 }
 
 void JrimmyGyro::Zero() {

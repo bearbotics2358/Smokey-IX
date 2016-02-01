@@ -40,6 +40,16 @@ private:
 	CanTalonSRX a_BROne;
 	CanTalonSRX a_BRTwo;
 
+	Encoder a_LeftEncoder;
+	Encoder a_RightEncoder;
+
+	/* TODO: remove test code
+	DigitalInput a_LeftA;
+	DigitalInput a_LeftB;
+	DigitalInput a_RightA;
+	DigitalInput a_RightB;
+	*/
+
 	CanTalonSRX a_Winch;
 	CanTalonSRX a_Finger;
 	CanTalonSRX a_Collector;
@@ -48,7 +58,7 @@ private:
 
 	DoubleSolenoid a_LeftSol;
 
-	// JrimmyGyro a_Gyro;
+	JrimmyGyro a_Gyro;
 
 
 	ShifterController a_Left;

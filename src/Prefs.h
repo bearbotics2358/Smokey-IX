@@ -20,6 +20,12 @@
 #define BACK_LEFT_TWO 11
 #define BACK_RIGHT_ONE 12
 #define BACK_RIGHT_TWO 10
+
+#define LEFT_ENCODER_PORT_A 0
+#define LEFT_ENCODER_PORT_B 1
+#define RIGHT_ENCODER_PORT_A 2
+#define RIGHT_ENCODER_PORT_B 3
+
 #define WINCH 14
 #define FINGER 17
 #define COLLECTOR 15
