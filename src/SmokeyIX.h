@@ -14,6 +14,18 @@
 #ifndef SRC_SMOKEYIX_H_
 #define SRC_SMOKEYIX_H_
 
+enum AutoState {
+	kMoveUnderLowBar = 0,
+	kMovePerp,
+	kTurnPerp,
+	kCheckAim,
+	kAdjust,
+	kShoot,
+	kTurnBack,
+	kDriveToC,
+	kIdle
+};
+
 class SmokeyIX : public IterativeRobot {
 public:
 	SmokeyIX(void);
@@ -43,13 +55,6 @@ private:
 	Encoder a_LeftEncoder;
 	Encoder a_RightEncoder;
 
-	/* TODO: remove test code
-	DigitalInput a_LeftA;
-	DigitalInput a_LeftB;
-	DigitalInput a_RightA;
-	DigitalInput a_RightB;
-	*/
-
 	CanTalonSRX a_Winch;
 	CanTalonSRX a_Finger;
 	CanTalonSRX a_Collector;
@@ -64,6 +69,7 @@ private:
 	ShifterController a_Left;
 	ShifterController a_Right;
 	Tank a_Tank;
+
 
 };
 

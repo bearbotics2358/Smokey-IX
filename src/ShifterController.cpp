@@ -2,10 +2,11 @@
 #include "LiveWindow/LiveWindow.h"
 
 
-ShifterController::ShifterController(CanTalonSRX &Left, CanTalonSRX &Right, DoubleSolenoid &Shift)
+ShifterController::ShifterController(CanTalonSRX &Left, CanTalonSRX &Right, DoubleSolenoid &Shift, int LeftPort, int RightPort)
 : LeftC(Left),
   RightC(Right),
   Sol(Shift),
+  EncoderC(LeftPort, RightPort),
   m_speed(0)
 {
 
@@ -76,6 +77,16 @@ void ShifterController::SetInverted(bool isInverted)
 bool ShifterController::GetInverted()
 {
 	return false;
+}
+
+float ShifterController::GetDistance()
+{
+	return EncoderC.GetDistance();
+}
+
+void ShifterController::ResetEncoder()
+{
+	EncoderC.Reset();
 }
 
 void ShifterController::PIDWrite(float output)
