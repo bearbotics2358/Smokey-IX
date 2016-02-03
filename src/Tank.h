@@ -11,6 +11,7 @@ public:
 
 	void Init();
 	void Update(Joystick &stick, Joystick &stick2);
+	float GetDistance();
 
 private:
 	static const std::string CONTROL_TYPE_KEY;

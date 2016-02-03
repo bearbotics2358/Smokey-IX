@@ -225,3 +225,8 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 	a_LeftSide.Set(left);
 	a_RightSide.Set(right);
 }
+
+float Tank::GetDistance()
+{
+	return (a_LeftSide.GetDistance() + a_RightSide.GetDistance()) / 2.0 ;
+}

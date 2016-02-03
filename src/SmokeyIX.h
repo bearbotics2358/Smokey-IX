@@ -10,6 +10,9 @@
 #include "CanTalonSRX.h"
 #include "JrimmyGyro.h"
 #include "I2C.h"
+#include "PivotArm.h"
+#include "Roller.h"
+#include "Lifter.h"
 
 #ifndef SRC_SMOKEYIX_H_
 #define SRC_SMOKEYIX_H_
@@ -55,11 +58,11 @@ private:
 	Encoder a_LeftEncoder;
 	Encoder a_RightEncoder;
 
-	CanTalonSRX a_Winch;
-	CanTalonSRX a_Finger;
-	CanTalonSRX a_Collector;
+	Lifter a_Winch;
+	PivotArm a_Finger;
+	PivotArm a_Collector;
 	CanTalonSRX a_Shooter;
-	CanTalonSRX a_Roller;
+	Roller a_Roller;
 
 	DoubleSolenoid a_LeftSol;
 
