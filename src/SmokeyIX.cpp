@@ -17,7 +17,7 @@ SmokeyIX::SmokeyIX(void)
   a_Winch(WINCH, WINCH_PORT_A, WINCH_PORT_B),
   a_Finger(FINGER, FINGER_ENCODER_PORT, 0, 0), // Third argument is our upper limit on the encoder, fourth is our lower limit
   a_Collector(COLLECTOR, COLLECTOR_ENCODER_PORT, 0, 0), // See above
-  a_Shooter(SHOOTER),
+  a_Shooter(SHOOTER, SHOOTER_ENCODER_PORT),
   a_Roller(ROLLER, ROLLER_SWITCH_PORT),
   a_LeftSol(PCM_PORT, LEFT_SOL_PORT_ONE, LEFT_SOL_PORT_TWO),   // Must specify port # if not 0
   a_Gyro(I2C::kMXP), // Didn't work because we used smartdashboard in the constructor- wait to use it until after RobotInit()

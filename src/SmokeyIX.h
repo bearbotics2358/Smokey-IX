@@ -13,6 +13,7 @@
 #include "PivotArm.h"
 #include "Roller.h"
 #include "Lifter.h"
+#include "Shooter.h"
 
 #ifndef SRC_SMOKEYIX_H_
 #define SRC_SMOKEYIX_H_
@@ -26,7 +27,7 @@ enum AutoState {
 	kShoot,
 	kTurnBack,
 	kDriveToC,
-	kIdle
+	kAutoIdle
 };
 
 class SmokeyIX : public IterativeRobot {
@@ -59,9 +60,13 @@ private:
 	Encoder a_RightEncoder;
 
 	Lifter a_Winch;
+
 	PivotArm a_Finger;
+
 	PivotArm a_Collector;
-	CanTalonSRX a_Shooter;
+
+	Shooter a_Shooter;
+
 	Roller a_Roller;
 
 	DoubleSolenoid a_LeftSol;

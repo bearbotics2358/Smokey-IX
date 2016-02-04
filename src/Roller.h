@@ -8,7 +8,7 @@
 #ifndef SRC_ROLLER_H_
 #define SRC_ROLLER_H_
 
-class Roller // This is for an arm that pivots, but never goes a full 360- uses an Absolute Encoder
+class Roller // This is for a roller motor- uses a switch to detect if a gamepiece is currently in the assembly
 {
 public:
 	Roller(int TalonPort, int SwitchPort);
