@@ -10,9 +10,25 @@
 #include "CanTalonSRX.h"
 #include "JrimmyGyro.h"
 #include "I2C.h"
+#include "PivotArm.h"
+#include "Roller.h"
+#include "Lifter.h"
+#include "Shooter.h"
 
 #ifndef SRC_SMOKEYIX_H_
 #define SRC_SMOKEYIX_H_
+
+enum AutoState {
+	kMoveUnderLowBar = 0,
+	kMovePerp,
+	kTurnPerp,
+	kCheckAim,
+	kAdjust,
+	kShoot,
+	kTurnBack,
+	kDriveToC,
+	kAutoIdle
+};
 
 class SmokeyIX : public IterativeRobot {
 public:
@@ -40,11 +56,18 @@ private:
 	CanTalonSRX a_BROne;
 	CanTalonSRX a_BRTwo;
 
-	CanTalonSRX a_Winch;
-	CanTalonSRX a_Finger;
-	CanTalonSRX a_Collector;
-	CanTalonSRX a_Shooter;
-	CanTalonSRX a_Roller;
+	Encoder a_LeftEncoder;
+	Encoder a_RightEncoder;
+
+	Lifter a_Winch;
+
+	PivotArm a_Finger;
+
+	PivotArm a_Collector;
+
+	Shooter a_Shooter;
+
+	Roller a_Roller;
 
 	DoubleSolenoid a_LeftSol;
 
@@ -54,6 +77,7 @@ private:
 	ShifterController a_Left;
 	ShifterController a_Right;
 	Tank a_Tank;
+
 
 };
 

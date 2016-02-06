@@ -9,7 +9,7 @@
 class ShifterController
 {
 public:
-	ShifterController(CanTalonSRX &Left, CanTalonSRX &Right, DoubleSolenoid &Shift);
+	ShifterController(CanTalonSRX &Left, CanTalonSRX &Right, DoubleSolenoid &Shift, int LeftPort, int RightPort);
 	~ShifterController();
 	void Set(float value, uint8_t syncGroup = 0);
 	void ShiftToggle();
@@ -20,6 +20,8 @@ public:
 	void Disable();
 	void SetInverted(bool isInverted);
 	bool GetInverted();
+	float GetDistance();
+	void ResetEncoder();
 
 	void PIDWrite(float output);
 
@@ -27,6 +29,8 @@ private:
 	CanTalonSRX &LeftC;
 	CanTalonSRX &RightC;
 	DoubleSolenoid &Sol;
+
+	Encoder EncoderC;
 
 	float m_speed;
 };

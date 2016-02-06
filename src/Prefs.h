@@ -20,11 +20,28 @@
 #define BACK_LEFT_TWO 11
 #define BACK_RIGHT_ONE 12
 #define BACK_RIGHT_TWO 10
+
+#define LEFT_ENCODER_PORT_A 0
+#define LEFT_ENCODER_PORT_B 1
+#define RIGHT_ENCODER_PORT_A 2
+#define RIGHT_ENCODER_PORT_B 3
+
 #define WINCH 14
-#define FINGER 15
-#define COLLECTOR 16
-#define SHOOTER 17
+#define WINCH_PORT_A 5
+#define WINCH_PORT_B 6
+
+#define FINGER 17
+#define FINGER_ENCODER_PORT 7
+
+#define COLLECTOR 15
+#define COLLECTOR_ENCODER_PORT 8
+
+#define SHOOTER 16
+#define SHOOTER_ENCODER_PORT 9
+
 #define ROLLER 18
+#define ROLLER_SWITCH_PORT 4
+
 
 #define LEFT_SOL_PORT_ONE 0
 #define LEFT_SOL_PORT_TWO 1
