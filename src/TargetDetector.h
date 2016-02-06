@@ -8,9 +8,15 @@ public:
 
 	void SnapImage();
 
+	void EnableDebugMode();
+	void DisableDebugMode();
+	bool GetDebugMode();
+
 private:
 	static void CheckIMAQError(int rval, std::string desc);
 	void ImageProcessingTask();
+
+	std::atomic_bool a_DebugMode;
 
 	std::thread a_ImageProcessingTask;
 	AxisCamera a_Camera;
