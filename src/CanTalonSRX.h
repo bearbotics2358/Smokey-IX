@@ -113,6 +113,7 @@
 #include <atomic>
 #include <deque>
 #include <mutex>
+#include <PIDSource.h>
 class CanTalonSRX : public CtreCanNode {
  private:
   // Use this for determining whether the default move constructor has been

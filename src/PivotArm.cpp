@@ -19,20 +19,22 @@ PivotArm::PivotArm(int TalonPort, int AbsPort, int Up, int Low)
 
 PivotArm::~PivotArm()
 {
-
+	/*
+	ArmC.SetForwardSoftLimit(upperLimit);
+	ArmC.SetForwardSoftLimit(lowerLimit);
+	*/
 }
 
 void PivotArm::Set(float value, uint8_t syncGroup)
 {
 	ArmC.Set(value);
+	ArmC.SetModeSelect(CanTalonSRX::kMode_PositionCloseLoop); //Change control mode of talon, default is PercentVbus
+	ArmC.SetFeedbackDeviceSelect(CANTalon::AnalogEncoder); //Set the feedback device that is hooked up to the talon
+	ArmC.SetPgain(0, .1); //1st is slotIdx, I think it means profile #, second is gain
 }
 
-void PivotArm::Update(Joystick &stick, int port1, int port2, int value)
+void PivotArm::Update(Joystick &stick, int port1, int port2, float value)
 {
-	if(EncoderC.Get() > upperLimit || EncoderC.Get() < lowerLimit)
-	{
-		Disable();
-	}
 	if(stick.GetRawButton(port1))
 	{
 		ArmC.Set(value);
@@ -44,14 +46,9 @@ void PivotArm::Update(Joystick &stick, int port1, int port2, int value)
 
 }
 
-void PivotArm::SetToAngle(float value2, float angle, uint8_t syncGroup)
-{
-
-}
-
 float PivotArm::GetAngle()
 {
-	return EncoderC.Get();
+	return EncoderC.GetValue();
 }
 
 void PivotArm::Disable()

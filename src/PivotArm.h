@@ -6,6 +6,7 @@
  */
 
 #include <WPILib.h>
+#include <PIDController.h>
 
 #ifndef SRC_PIVOTARM_H_
 #define SRC_PIVOTARM_H_
@@ -22,8 +23,7 @@ public:
 	PivotArm(int TalonPort, int AbsPort, int Up, int Low);
 	~PivotArm();
 	void Set(float value, uint8_t syncGroup = 0);
-	void Update(Joystick &stick, int port1, int port2, int value);
-	void SetToAngle(float value2, float angle, uint8_t syncGroup = 0);
+	void Update(Joystick &stick, int port1, int port2, float value);
 	float GetAngle();
 	void Disable();
 
@@ -35,7 +35,7 @@ private:
 
 	CanTalonSRX ArmC;
 
-	DigitalInput EncoderC;
+	AnalogInput EncoderC;
 
 };
 

@@ -84,14 +84,7 @@ void SmokeyIX::TestPeriodic()
 
 	a_Shooter.Set(a_Joystick.GetRawButton(1));
 
-	if(a_Joystick.GetRawButton(5))
-	{
-		a_Collector.Set(a_Joystick.GetRawButton(5));
-	}
-	else if(a_Joystick.GetRawButton(3))
-	{
-		a_Collector.Set(-1.0 * a_Joystick.GetRawButton(3));
-	}
+	a_Collector.Update(a_Joystick, 3, 5, 0.5);
 
 	if(a_Joystick.GetRawButton(4))
 	{
@@ -102,14 +95,7 @@ void SmokeyIX::TestPeriodic()
 		a_Winch.Update(-1.0 * a_Joystick.GetRawButton(6));
 	}
 
-	if(a_Joystick.GetRawButton(7))
-	{
-		a_Finger.Set(a_Joystick.GetRawButton(7));
-	}
-	else if(a_Joystick.GetRawButton(8))
-	{
-		a_Finger.Set(-1.0 * a_Joystick.GetRawButton(8));
-	}
+	a_Finger.Update(a_Joystick, 7, 8, 0.5);
 
 	//Roller Test
 	a_Roller.Update(-1.0 * a_Joystick.GetRawButton(9));
