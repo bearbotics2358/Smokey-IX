@@ -19,7 +19,8 @@
 #define SRC_SMOKEYIX_H_
 
 enum AutoState {
-	kMoveUnderLowBar = 0,
+	kMoveToLowBar = 0,
+	kMoveUnderLowBar,
 	kMovePerp,
 	kTurnPerp,
 	kCheckAim,
@@ -73,11 +74,11 @@ private:
 
 	JrimmyGyro a_Gyro;
 
-
 	ShifterController a_Left;
 	ShifterController a_Right;
 	Tank a_Tank;
 
+	AutoState a_AutoState;
 
 };
 

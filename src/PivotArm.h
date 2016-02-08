@@ -11,12 +11,6 @@
 #ifndef SRC_PIVOTARM_H_
 #define SRC_PIVOTARM_H_
 
-enum PivotState
-{
-	kArmIdle,
-	kTurnToPosition
-};
-
 class PivotArm // This is for an arm that pivots, but never goes a full 360- uses an Absolute Encoder
 {
 public:

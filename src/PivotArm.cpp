@@ -6,8 +6,6 @@
  */
 #include "PivotArm.h"
 
-PivotState State = kArmIdle;
-
 PivotArm::PivotArm(int TalonPort, int AbsPort, int Up, int Low)
 :
 	ArmC(TalonPort),
@@ -27,10 +25,11 @@ PivotArm::~PivotArm()
 
 void PivotArm::Set(float value, uint8_t syncGroup)
 {
-	ArmC.Set(value);
 	ArmC.SetModeSelect(CanTalonSRX::kMode_PositionCloseLoop); //Change control mode of talon, default is PercentVbus
 	ArmC.SetFeedbackDeviceSelect(CANTalon::AnalogEncoder); //Set the feedback device that is hooked up to the talon
 	ArmC.SetPgain(0, .1); //1st is slotIdx, I think it means profile #, second is gain
+	ArmC.Set(value);
+
 }
 
 void PivotArm::Update(Joystick &stick, int port1, int port2, float value)

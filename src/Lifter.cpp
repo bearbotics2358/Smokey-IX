@@ -16,6 +16,7 @@ Lifter::Lifter(int TalonPort, int EncoderAPort, int EncoderBPort)
 
 Lifter::~Lifter()
 {
+
 }
 
 void Lifter::Update(float value, uint8_t syncGroup)

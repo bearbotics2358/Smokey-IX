@@ -16,6 +16,7 @@ Roller::Roller(int TalonPort, int SwitchPort)
 
 Roller::~Roller()
 {
+
 }
 
 void Roller::Update(float value, uint8_t syncGroup)
