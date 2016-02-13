@@ -11,3 +11,14 @@ ImgPtr ThresholdFilter::GetImage() {
 	imaqThreshold(img.get(), img.get(), 0, a_Threshold, FALSE, 0.0);
 	return img;
 }
+
+ClusterThresholdFilter::ClusterThresholdFilter(ImageSource::Ptr src):
+		ImageFilter(src) {
+}
+
+ImgPtr ClusterThresholdFilter::GetImage() {
+	ImgPtr img = a_Source.get()->GetImage();
+	imaqAutoThreshold2(
+			img.get(), img.get(), 2, IMAQ_THRESH_CLUSTERING, nullptr);
+	return img;
+}

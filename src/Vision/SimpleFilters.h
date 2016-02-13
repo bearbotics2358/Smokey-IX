@@ -10,3 +10,9 @@ public:
 protected:
 	int a_Threshold;
 };
+
+class ClusterThresholdFilter: public ImageFilter {
+public:
+	ClusterThresholdFilter(ImageSource::Ptr src);
+	virtual ImgPtr GetImage();
+};
