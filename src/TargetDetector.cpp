@@ -40,6 +40,18 @@ bool TargetDetector::GetDebugMode() {
 	return a_DebugMode;
 }
 
+void TargetDetector::StartProcessing() {
+	a_Processing = true;
+}
+
+void TargetDetector::StopProcessing() {
+	a_Processing = false;
+}
+
+bool TargetDetector::IsProcessing() {
+	return a_Processing;
+}
+
 void TargetDetector::ImageProcessingTask() {
 	// Kernel for advanced morphology operation (remove small objects)
 	int kernel[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
