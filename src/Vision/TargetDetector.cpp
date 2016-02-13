@@ -62,8 +62,10 @@ bool TargetDetector::IsProcessing() {
 }
 
 ImageFilter::Ptr TargetDetector::AppendProcessingChain(ImageSource::Ptr src) {
-	ImageFilter::Ptr thresholdFilter(new ThresholdFilter(src, 128));
-	return thresholdFilter;
+	ImageFilter::Ptr clusterThreshFilter(new ClusterThresholdFilter(src));
+	ImageFilter::Ptr smallParticleFilter(new ParticleSizeFilter(
+			clusterThreshFilter, ParticleSizeFilter::KEEP_LARGE_PARTICLES, 3));
+	return smallParticleFilter;
 }
 
 void TargetDetector::ImageProcessingTask() {
@@ -142,7 +144,7 @@ void TargetDetector::ImageProcessingTask() {
 
 		// Filters particles based on their size
 		CheckIMAQError(
-				imaqSizeFilter(curImage, curImage, TRUE, 3, (SizeType)0, &structElem),
+				imaqSizeFilter(curImage, curImage, TRUE, 3, IMAQ_KEEP_LARGE, &structElem),
 				"imaqSizeFilter");
 		SaveImage("03-remove-small-particles", curImage);
 
