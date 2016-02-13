@@ -19,7 +19,11 @@ public:
 
 private:
 	static void CheckIMAQError(int rval, std::string desc);
+
+	void SaveImage(std::string path, Image *img);
 	void ImageProcessingTask();
+
+	ImageFilter::Ptr AppendProcessingChain(ImageSource::Ptr src);
 
 	std::atomic_bool a_DebugMode;
 	std::atomic_bool a_Processing;

@@ -1,4 +1,5 @@
 #include "TargetDetector.h"
+#include "SimpleFilters.h"
 
 using namespace std;
 
@@ -19,6 +20,15 @@ void TargetDetector::CheckIMAQError(int rval, string desc) {
 		errorDesc << error << " " << desc;
 
 		throw runtime_error(errorDesc.str());
+	}
+}
+
+void TargetDetector::SaveImage(string name, Image *img) {
+	if (a_DebugMode) {
+		string filename("/home/lvuser/" + name + ".jpg");
+	    CheckIMAQError(
+	        imaqWriteJPEGFile(img, filename.c_str(), 1000, NULL),
+	        "imaqWriteJPEGFile");
 	}
 }
 
@@ -49,6 +59,11 @@ void TargetDetector::StopProcessing() {
 
 bool TargetDetector::IsProcessing() {
 	return a_Processing;
+}
+
+ImageFilter::Ptr TargetDetector::AppendProcessingChain(ImageSource::Ptr src) {
+	ImageFilter::Ptr thresholdFilter(new ThresholdFilter(src, 128));
+	return thresholdFilter;
 }
 
 void TargetDetector::ImageProcessingTask() {
@@ -115,6 +130,7 @@ void TargetDetector::ImageProcessingTask() {
 		CheckIMAQError(
 				imaqExtractColorPlanes(curImage, IMAQ_HSL, nullptr, nullptr, luminancePlane),
 				"imaqExtractColorPlanes");
+		SaveImage("01-extract-luminance", luminancePlane);
 
 		// Auto thresholding (find bright objects)
 		ThresholdData *threshData = imaqAutoThreshold2(
@@ -122,16 +138,19 @@ void TargetDetector::ImageProcessingTask() {
 		if (threshData == nullptr) {
 			CheckIMAQError(0, "imaqAutoThreshold2");
 		}
+		SaveImage("02-threshold", curImage);
 
 		// Filters particles based on their size
 		CheckIMAQError(
 				imaqSizeFilter(curImage, curImage, TRUE, 3, (SizeType)0, &structElem),
 				"imaqSizeFilter");
+		SaveImage("03-remove-small-particles", curImage);
 
 		// Fill holes
 		CheckIMAQError(
 				imaqFillHoles(curImage, curImage, TRUE),
 				"imaqFillHoles");
+		SaveImage("04-fill-holes", curImage);
 
 		shapeReport = imaqMatchShape(curImage, curImage, targetTemplate,
 				TRUE, 1, 0.5, &targetMatchesFound);
@@ -139,13 +158,15 @@ void TargetDetector::ImageProcessingTask() {
 			CheckIMAQError(0, "imaqMatchShape");
 		}
 
-		for (int i = 0; i < targetMatchesFound; i++) {
-			ShapeReport shape = shapeReport[i];
-			if (shape.score >= 500.0) {
-				cout	<< "# Match " << i << endl
-						<< "- score: " << shape.score << endl
-						<< "- center: (" << shape.centroid.x << ", " << shape.centroid.y << ")" << endl
-						<< "- size: (" << shape.size << endl;
+		if (a_DebugMode) {
+			for (int i = 0; i < targetMatchesFound; i++) {
+				ShapeReport shape = shapeReport[i];
+				if (shape.score >= 500.0) {
+					cout	<< "# Match " << i << endl
+							<< "- score: " << shape.score << endl
+							<< "- center: (" << shape.centroid.x << ", " << shape.centroid.y << ")" << endl
+							<< "- size: (" << shape.size << endl;
+				}
 			}
 		}
 

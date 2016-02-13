@@ -7,6 +7,7 @@ public:
 
 	ImageFilter(ImageSource::Ptr source);
 
+	virtual bool IsNewImageAvailable() { return true; }
 	virtual ImgRef GetImage() = 0;
 
 protected:
