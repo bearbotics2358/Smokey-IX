@@ -12,11 +12,16 @@ public:
 	void DisableDebugMode();
 	bool GetDebugMode();
 
+	void StartProcessing();
+	void StopProcessing();
+	bool IsProcessing();
+
 private:
 	static void CheckIMAQError(int rval, std::string desc);
 	void ImageProcessingTask();
 
 	std::atomic_bool a_DebugMode;
+	std::atomic_bool a_Processing;
 
 	std::thread a_ImageProcessingTask;
 	AxisCamera a_Camera;

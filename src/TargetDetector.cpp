@@ -3,10 +3,9 @@
 using namespace std;
 
 TargetDetector::TargetDetector(string ip):
-		a_DebugMode(true),
+		a_DebugMode(true), a_Processing(false),
 		a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
 		a_Camera(ip) {
-
 }
 
 TargetDetector::~TargetDetector() {
@@ -79,6 +78,12 @@ void TargetDetector::ImageProcessingTask() {
 	Image *postThreshold = imaqCreateImage(IMAQ_IMAGE_U8, 0);
 
 	while (true) {
+		if (!a_Processing) {
+			// So we don't peg the CPU
+			this_thread::sleep_for(chrono::milliseconds(10));
+			continue;
+		}
+
 		// Copy the current frame to this thread
 		{
 			lock_guard<mutex> guard(a_ImageMutex);
