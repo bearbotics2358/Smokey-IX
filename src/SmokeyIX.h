@@ -22,13 +22,16 @@
 enum AutoState {
 	kMoveToLowBar = 0,
 	kMoveUnderLowBar,
-	kMovePerp,
-	kTurnPerp,
+	kMoveToShoot,
+	kTurnToShoot,
+	kMoveTowardsTower,
 	kCheckAim,
 	kAdjust,
 	kShoot,
 	kTurnBack,
 	kDriveToC,
+	kTurnToC,
+	kDriveThroughC,
 	kAutoIdle
 };
 

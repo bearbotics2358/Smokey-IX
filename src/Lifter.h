@@ -15,7 +15,7 @@ public:
 	~Lifter();
 	void Update(float value, uint8_t syncGroup = 0);
 	void Set(float value1, float setPoint);
-	bool GetLength();
+	float GetLength();
 	void Disable();
 
 	void PIDWrite(float output);
@@ -24,6 +24,9 @@ private:
 	CanTalonSRX LifterC;
 
 	Encoder EncoderC;
+
+	DigitalInput pulseA;
+	DigitalInput pulseB;
 };
 
 

@@ -28,7 +28,7 @@ void Shooter::Update()
 {
 	if(cockIt)
 	{
-		if(EncoderC.Get() < cockValue)
+		if(EncoderC.GetValue() < cockValue)
 		{
 			ShooterC.Set(0.5);
 		}
@@ -46,7 +46,7 @@ void Shooter::Update()
 
 float Shooter::GetPosition()
 {
-	return EncoderC.Get();
+	return EncoderC.GetValue();
 }
 
 void Shooter::SetPosition(float SetPoint)

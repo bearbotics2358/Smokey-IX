@@ -31,13 +31,13 @@
 #define WINCH_PORT_B 6
 
 #define FINGER 17
-#define FINGER_ENCODER_PORT 7
+#define FINGER_ENCODER_PORT 0
 
 #define COLLECTOR 15
-#define COLLECTOR_ENCODER_PORT 8
+#define COLLECTOR_ENCODER_PORT 1
 
 #define SHOOTER 16
-#define SHOOTER_ENCODER_PORT 9
+#define SHOOTER_ENCODER_PORT 2
 
 #define ROLLER 18
 #define ROLLER_SWITCH_PORT 4
@@ -49,6 +49,8 @@
 #define RIGHT_SOL_PORT_ONE 2
 #define RIGHT_SOL_PORT_TWO 3
 
+#define ROBOT_LENGTH 31.0 // This is in inches
+#define ROBOT_PIVOT_POINT 6.5 //From back of frame in inches
 
 
 #endif /* SRC_PREFS_H_ */
