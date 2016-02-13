@@ -6,8 +6,8 @@ public:
 	StillImageSource(std::string filename);
 
 	virtual bool IsNewImageAvailable();
-	virtual ImgRef GetImage();
+	virtual ImgPtr GetImage();
 
 private:
-	ImgRef a_Image;
+	ImgPtr a_Image;
 };

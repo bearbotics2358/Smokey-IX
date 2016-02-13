@@ -5,7 +5,7 @@ class ThresholdFilter: public ImageFilter {
 public:
 	ThresholdFilter(ImageSource::Ptr src, int threshold);
 
-	virtual ImgRef GetImage();
+	virtual ImgPtr GetImage();
 
 protected:
 	int a_Threshold;

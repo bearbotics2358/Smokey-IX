@@ -13,6 +13,6 @@ bool StillImageSource::IsNewImageAvailable() {
 	return true;
 }
 
-ImgRef StillImageSource::GetImage() {
+ImgPtr StillImageSource::GetImage() {
 	return a_Image;
 }

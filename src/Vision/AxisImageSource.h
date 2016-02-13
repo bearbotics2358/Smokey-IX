@@ -7,9 +7,9 @@ public:
 	AxisImageSource(std::string ip);
 
 	virtual bool IsNewImageAvailable();
-	virtual ImgRef GetImage();
+	virtual ImgPtr GetImage();
 
 private:
 	AxisCamera a_Camera;
-	ImgRef a_CurrentImage;
+	ImgPtr a_CurrentImage;
 };

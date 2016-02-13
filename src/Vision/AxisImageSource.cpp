@@ -11,7 +11,7 @@ bool AxisImageSource::IsNewImageAvailable() {
 	return a_Camera.IsFreshImage();
 }
 
-ImgRef AxisImageSource::GetImage() {
+ImgPtr AxisImageSource::GetImage() {
 	if (IsNewImageAvailable()) {
 		Image *image = imaqCreateImage(IMAQ_IMAGE_RGB, DEFAULT_BORDER_SIZE);
 		a_Camera.GetImage(image);
