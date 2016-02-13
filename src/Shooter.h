@@ -29,7 +29,7 @@ private:
 
 	CanTalonSRX ShooterC;
 
-	DigitalInput EncoderC;
+	AnalogInput EncoderC;
 };
 
 

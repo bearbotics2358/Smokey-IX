@@ -9,7 +9,9 @@
 
 Lifter::Lifter(int TalonPort, int EncoderAPort, int EncoderBPort)
 :	LifterC(TalonPort),
-	EncoderC(EncoderAPort, EncoderBPort)
+	EncoderC(EncoderAPort, EncoderBPort),
+	pulseA(EncoderAPort),
+	pulseB(EncoderBPort)
 {
 
 }
@@ -24,9 +26,9 @@ void Lifter::Update(float value, uint8_t syncGroup)
 	LifterC.Set(value);
 }
 
-bool Lifter::GetLength()
+float Lifter::GetLength()
 {
-	return EncoderC.GetDistance();
+	return EncoderC.GetRaw();
 }
 
 void Lifter::Disable()

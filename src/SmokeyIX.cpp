@@ -2,6 +2,8 @@
 #include "SmokeyIX.h"
 #include "Prefs.h"
 #include "PowerDistributionPanel.h"
+#include <math.h>
+#include <stdio.h>
 
 SmokeyIX::SmokeyIX(void) :
 a_Joystick(JOYSTICK_PORT),
@@ -14,11 +16,11 @@ a_BROne(BACK_RIGHT_ONE),
 a_BRTwo(BACK_RIGHT_TWO),
 a_LeftEncoder(LEFT_ENCODER_PORT_A,LEFT_ENCODER_PORT_B),
 a_RightEncoder(RIGHT_ENCODER_PORT_A,RIGHT_ENCODER_PORT_B),
-a_Winch(WINCH, WINCH_PORT_A,WINCH_PORT_B),
+a_Winch(WINCH, WINCH_PORT_A, WINCH_PORT_B),
 a_Finger(FINGER, FINGER_ENCODER_PORT, 0, 0), // Third argument is our upper limit on the encoder, fourth is our lower limit
 a_Collector(COLLECTOR, COLLECTOR_ENCODER_PORT, 0, 0), // See above
 a_Shooter(SHOOTER, SHOOTER_ENCODER_PORT),
-a_Roller(ROLLER,ROLLER_SWITCH_PORT),
+a_Roller(ROLLER, ROLLER_SWITCH_PORT),
 a_LeftSol(PCM_PORT, LEFT_SOL_PORT_ONE,LEFT_SOL_PORT_TWO),   // Must specify port # if not 0
 a_Gyro(I2C::kMXP), // Didn't work because we used smartdashboard in the constructor- wait to use it until after RobotInit()
 a_Left(a_BLOne, a_BLTwo, a_LeftSol, LEFT_ENCODER_PORT_A,LEFT_ENCODER_PORT_B),
@@ -43,11 +45,15 @@ void SmokeyIX::AutonomousPeriodic() {
 
 	int tankDistance = 0;
 
-	const int lowBarDistance = 0;
-	const int lowBarClear = 0;
-	const int shootSpotDistance = 0;
-	const double turnAngle = 0.0;	const double turnAroundAngle = 0.0;
-	const int cDistance = 0;
+	const double lowBarDistance = 0.0; //77.0" - ROBOT_LENGTH
+	const double lowBarClear = 0.0; //48.0" + ROBOT_LENGTH
+	const double turnSpotDistance = 0.0; //113.06" - ROBOT_PIVOT_POINT
+	const double shootSpotDistance = 0.0;
+	const double turnAngle = 60.0;
+	const double turnAroundAngle = (180 * M_1_PI) * asin(48.0/(sqrt(pow(shootSpotDistance,2) - 96*sqrt(3)*shootSpotDistance + 9216)));
+	const double turnToCAngle = 180.0 - turnAngle - turnAroundAngle; // check all these angles when testing // 30 if past batter
+	const double cDistance = (sqrt(pow(shootSpotDistance,2) - 96*sqrt(3)*shootSpotDistance + 9216));
+	const double throughCDistance = 0.0; //dependent on shootSpotDistance
 
 	switch (a_AutoState) {
 	case kMoveToLowBar:
@@ -63,25 +69,33 @@ void SmokeyIX::AutonomousPeriodic() {
 			a_Tank.AutonUpdate(0.5, 0.5); //change to a usable speed
 		} else {
 			a_Tank.AutonUpdate(0, 0);
-			nextState = kMovePerp;
+			nextState = kMoveToShoot;
 		}
 		break;
-	case kMovePerp:
-		if (tankDistance < shootSpotDistance) {
+	case kMoveToShoot:
+		if (tankDistance < turnSpotDistance) {
 			a_Tank.AutonUpdate(0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
-			nextState = kTurnPerp;
+			nextState = kTurnToShoot;
 		}
 		break;
-	case kTurnPerp:
+	case kTurnToShoot:
 		if (a_Gyro.GetAngle() < turnAngle) {
 			a_Tank.AutonUpdate(0.5, -0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
-			nextState = kCheckAim;
+			nextState = kMoveTowardsTower;
 		}
 		break;
+	case kMoveTowardsTower:
+		if (tankDistance < shootSpotDistance) {
+					a_Tank.AutonUpdate(0.5, 0.5);
+				} else {
+					a_Tank.AutonUpdate(0, 0);
+					nextState = kCheckAim;
+				}
+				break;
 	case kCheckAim:
 		// insert vision code here
 		break;
@@ -105,9 +119,25 @@ void SmokeyIX::AutonomousPeriodic() {
 			a_Tank.AutonUpdate(0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
-			nextState = kAutoIdle;
+			nextState = kTurnToC;
 		}
 		break;
+	case kTurnToC:
+			if (a_Gyro.GetAngle() < turnToCAngle) {
+				a_Tank.AutonUpdate(0.5, -0.5);
+			} else {
+				a_Tank.AutonUpdate(0, 0);
+				nextState = kDriveThroughC;
+			}
+			break;
+	case kDriveThroughC:
+			if (tankDistance < throughCDistance) {
+				a_Tank.AutonUpdate(0.5, 0.5);
+			} else {
+				a_Tank.AutonUpdate(0, 0);
+				nextState = kAutoIdle;
+			}
+			break;
 	case kAutoIdle:
 		a_Tank.AutonUpdate(0, 0);
 		break;
@@ -122,16 +152,22 @@ void SmokeyIX::TeleopInit() {
 }
 
 void SmokeyIX::TeleopPeriodic() {
-	a_Tank.Update(a_Joystick, a_Joystick2);
+	const int shootSpotDistance = 0;
+	const double turnAngle = 60.0;
+	const double turnAroundAngle = (180 * M_1_PI) * asin(48/(sqrt(pow(shootSpotDistance,2) - 96*sqrt(3)*shootSpotDistance + 9216)));
+	const double turnToCAngle = 180.0 - turnAngle - turnAroundAngle;
+
+	SmartDashboard::PutNumber("turnAroundAngle", turnAroundAngle);
+	SmartDashboard::PutNumber("turnToCAngle", turnToCAngle);
+	// a_Tank.Update(a_Joystick, a_Joystick2);
 	a_Gyro.Update();
-	SmartDashboard::PutNumber("Left Encoder (Distance)",
-			a_LeftEncoder.GetDistance());
+	SmartDashboard::PutNumber("Left Encoder (Distance)", a_LeftEncoder.GetDistance());
 	SmartDashboard::PutNumber("Left Encoder (Raw)", a_LeftEncoder.GetRaw());
-	SmartDashboard::PutNumber("Right Encoder (Distance)",
-			a_RightEncoder.GetDistance());
+	SmartDashboard::PutNumber("Right Encoder (Distance)", a_RightEncoder.GetDistance());
 	SmartDashboard::PutNumber("Right Encoder (Raw)", a_RightEncoder.GetRaw());
 	SmartDashboard::PutNumber("Gyro value", a_Gyro.GetAngle());
-
+	SmartDashboard::PutNumber("Shooter", a_Shooter.GetPosition());
+	SmartDashboard::PutNumber("Winch", a_Winch.GetLength());
 	/* TODO: remove test code
 	 SmartDashboard::PutBoolean("LeftA", a_LeftA.Get());
 	 SmartDashboard::PutBoolean("RightB", a_RightB.Get());
@@ -160,25 +196,17 @@ void SmokeyIX::TestPeriodic() {
 		a_Winch.Update(-1.0 * a_Joystick.GetRawButton(6));
 	}
 
-	a_Finger.Update(a_Joystick, 7, 8, 0.5);
+
+	// a_Finger.Update(a_Joystick, 7, 8, 0.5);
 
 	//Roller Test
 	a_Roller.Update(-1.0 * a_Joystick.GetRawButton(9));
 
 	SmartDashboard::PutNumber("Left", a_LeftEncoder.GetDistance());
 	SmartDashboard::PutNumber("Right", a_RightEncoder.GetDistance());
+	SmartDashboard::PutNumber("Shooter", a_Shooter.GetPosition());
+	SmartDashboard::PutNumber("Winch", a_Winch.GetLength());
 
-	/* TODO: remove test code
-	 SmartDashboard::PutNumber("LeftA", a_LeftA.Get());
-	 SmartDashboard::PutNumber("RightB", a_RightB.Get());
-	 SmartDashboard::PutNumber("LeftB", a_LeftB.Get());
-	 SmartDashboard::PutNumber("RightA", a_RightA.Get());
-	 */
-
-	SmartDashboard::PutNumber("Current A", a_PDP.GetCurrent(0)); // Not actually errors- Eclipse is just mad
-	SmartDashboard::PutNumber("Current B", a_PDP.GetCurrent(1));
-	SmartDashboard::PutNumber("Current C", a_PDP.GetCurrent(2));
-	SmartDashboard::PutNumber("Current D", a_PDP.GetCurrent(3));
 }
 
 START_ROBOT_CLASS(SmokeyIX);
