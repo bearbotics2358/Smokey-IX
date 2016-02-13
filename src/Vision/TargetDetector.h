@@ -21,6 +21,7 @@ private:
 	static void CheckIMAQError(int rval, std::string desc);
 
 	void SaveImage(std::string path, Image *img);
+	void ImageCaptureTask();
 	void ImageProcessingTask();
 
 	ImageFilter::Ptr AppendProcessingChain(ImageSource::Ptr src);
@@ -28,6 +29,7 @@ private:
 	std::atomic_bool a_DebugMode;
 	std::atomic_bool a_Processing;
 
+	std::thread a_ImageCaptureTask;
 	std::thread a_ImageProcessingTask;
 	AxisCamera a_Camera;
 

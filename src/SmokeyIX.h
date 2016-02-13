@@ -14,6 +14,7 @@
 #include "Roller.h"
 #include "Lifter.h"
 #include "Shooter.h"
+#include "Vision/TargetDetector.h"
 
 #ifndef SRC_SMOKEYIX_H_
 #define SRC_SMOKEYIX_H_
@@ -80,6 +81,7 @@ private:
 
 	AutoState a_AutoState;
 
+	TargetDetector a_TargetDetector;
 };
 
 #endif /* SRC_SMOKEYIX_H_ */

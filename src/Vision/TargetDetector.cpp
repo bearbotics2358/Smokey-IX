@@ -5,6 +5,7 @@ using namespace std;
 
 TargetDetector::TargetDetector(string ip):
 		a_DebugMode(true), a_Processing(false),
+		a_ImageCaptureTask(&TargetDetector::ImageCaptureTask, this),
 		a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
 		a_Camera(ip) {
 }
@@ -66,6 +67,14 @@ ImageFilter::Ptr TargetDetector::AppendProcessingChain(ImageSource::Ptr src) {
 	ImageFilter::Ptr smallParticleFilter(new ParticleSizeFilter(
 			clusterThreshFilter, ParticleSizeFilter::KEEP_LARGE_PARTICLES, 3));
 	return smallParticleFilter;
+}
+
+void TargetDetector::ImageCaptureTask() {
+	while (true) {
+		if (a_Camera.IsFreshImage()) {
+			SnapImage();
+		}
+	}
 }
 
 void TargetDetector::ImageProcessingTask() {

@@ -24,7 +24,8 @@ a_Gyro(I2C::kMXP), // Didn't work because we used smartdashboard in the construc
 a_Left(a_BLOne, a_BLTwo, a_LeftSol, LEFT_ENCODER_PORT_A,LEFT_ENCODER_PORT_B),
 a_Right(a_BROne, a_BRTwo, a_LeftSol,RIGHT_ENCODER_PORT_A, RIGHT_ENCODER_PORT_B),
 a_Tank(a_Left,a_Right),
-a_AutoState(kAutoIdle){
+a_AutoState(kAutoIdle),
+a_TargetDetector("10.23.58.11") {
 }
 
 void SmokeyIX::RobotInit() {
