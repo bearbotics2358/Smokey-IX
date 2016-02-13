@@ -3,12 +3,12 @@
 
 class ImageFilter: public ImageSource {
 public:
-	typedef std::shared_ptr<ImageSource> ImgSrcRef;
+	typedef std::shared_ptr<ImageFilter> Ptr;
 
-	ImageFilter(std::shared_ptr<ImageSource> source);
+	ImageFilter(ImageSource::Ptr source);
 
 	virtual ImgRef GetImage() = 0;
 
 protected:
-	std::shared_ptr<ImageSource> a_Source;
+	ImageSource::Ptr a_Source;
 };

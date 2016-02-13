@@ -3,7 +3,7 @@
 
 class ThresholdFilter: public ImageFilter {
 public:
-	ThresholdFilter(ImgSrcRef src, int threshold);
+	ThresholdFilter(ImageSource::Ptr src, int threshold);
 
 	virtual ImgRef GetImage();
 

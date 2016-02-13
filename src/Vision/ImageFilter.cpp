@@ -1,5 +1,5 @@
 #include "ImageFilter.h"
 
-ImageFilter::ImageFilter(ImgSrcRef source):
+ImageFilter::ImageFilter(ImageSource::Ptr source):
 		a_Source(source) {
 }

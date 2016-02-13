@@ -2,7 +2,7 @@
 
 using namespace std;
 
-ThresholdFilter::ThresholdFilter(ImgSrcRef src, int threshold):
+ThresholdFilter::ThresholdFilter(ImageSource::Ptr src, int threshold):
 		ImageFilter(src), a_Threshold(threshold) {
 }
 
