@@ -3,9 +3,9 @@
 using namespace std;
 
 TargetDetector::TargetDetector(string ip):
-		a_DebugMode(true), a_Processing(false),
-		a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
-		a_Camera(ip) {
+				a_DebugMode(true), a_Processing(false),
+				a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
+				a_Camera(ip) {
 }
 
 TargetDetector::~TargetDetector() {
@@ -42,24 +42,24 @@ bool TargetDetector::GetDebugMode() {
 
 void TargetDetector::ImageProcessingTask() {
 	// Kernel for advanced morphology operation (remove small objects)
-    int kernel[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+	int kernel[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 	// Advanced morphology parameters (for removing small objects)
-    StructuringElement structElem = {
-    	3, 3, FALSE, kernel
-    };
+	StructuringElement structElem = {
+			3, 3, FALSE, kernel
+	};
 
-    // Lookup table for creating binary images
-    short lookupTable[256];
-    lookupTable[0] = 0;
-    for (int i = 1; i < 256; i++) {
-        lookupTable[i] = 1;
-    }
+	// Lookup table for creating binary images
+	short lookupTable[256];
+	lookupTable[0] = 0;
+	for (int i = 1; i < 256; i++) {
+		lookupTable[i] = 1;
+	}
 
-    // Target template image
-    Image *targetTemplate = imaqCreateImage(IMAQ_IMAGE_U8, 0);
-    CheckIMAQError(
-    		imaqReadFile(targetTemplate, "/home/lvuser/target_template.png", NULL, NULL),
+	// Target template image
+	Image *targetTemplate = imaqCreateImage(IMAQ_IMAGE_U8, 0);
+	CheckIMAQError(
+			imaqReadFile(targetTemplate, "/home/lvuser/target_template.png", NULL, NULL),
 			"imaqReadFile(targetTemplate)");
 
 	// Normalize the target template
@@ -69,7 +69,7 @@ void TargetDetector::ImageProcessingTask() {
 
 	// Holds the results of the shape match
 	ShapeReport* shapeReport = NULL;
-    int targetMatchesFound;
+	int targetMatchesFound;
 
 	// Images will be copied into this image as they arrive from the camera
 	Image *curImage = imaqCreateImage(IMAQ_IMAGE_HSL, 0);
@@ -112,7 +112,7 @@ void TargetDetector::ImageProcessingTask() {
 			CheckIMAQError(0, "imaqAutoThreshold2");
 		}
 
-	    // Filters particles based on their size
+		// Filters particles based on their size
 		CheckIMAQError(
 				imaqSizeFilter(curImage, curImage, TRUE, 3, (SizeType)0, &structElem),
 				"imaqSizeFilter");
@@ -131,10 +131,10 @@ void TargetDetector::ImageProcessingTask() {
 		for (int i = 0; i < targetMatchesFound; i++) {
 			ShapeReport shape = shapeReport[i];
 			if (shape.score >= 500.0) {
-				cout << "# Match " << i << endl
-					 << "- score: " << shape.score << endl
-					 << "- center: (" << shape.centroid.x << ", " << shape.centroid.y << ")" << endl
-					 << "- size: (" << shape.size << endl;
+				cout	<< "# Match " << i << endl
+						<< "- score: " << shape.score << endl
+						<< "- center: (" << shape.centroid.x << ", " << shape.centroid.y << ")" << endl
+						<< "- size: (" << shape.size << endl;
 			}
 		}
 
