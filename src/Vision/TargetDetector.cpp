@@ -2,51 +2,6 @@
 
 using namespace std;
 
-AxisImageSource::AxisImageSource(string ip):
-		a_Camera(ip) {
-}
-
-bool AxisImageSource::IsNewImageAvailable() {
-	return a_Camera.IsFreshImage();
-}
-
-ImgRef AxisImageSource::GetImage() {
-	if (IsNewImageAvailable()) {
-		Image *image = imaqCreateImage(IMAQ_IMAGE_RGB, DEFAULT_BORDER_SIZE);
-		a_Camera.GetImage(image);
-		a_CurrentImage.reset(image, imaqDispose);
-	}
-	return a_CurrentImage;
-}
-
-StillImageSource::StillImageSource(string filename) {
-	Image *image = imaqCreateImage(IMAQ_IMAGE_RGB, DEFAULT_BORDER_SIZE);
-	imaqReadFile(image, filename.c_str(), nullptr, nullptr);
-	a_Image.reset(image, imaqDispose);
-}
-
-bool StillImageSource::IsNewImageAvailable() {
-	return true;
-}
-
-ImgRef StillImageSource::GetImage() {
-	return a_Image;
-}
-
-ImageFilter::ImageFilter(shared_ptr<ImageSource> source):
-		a_Source(source) {
-}
-
-ThresholdFilter::ThresholdFilter(ImgSrcRef src, int threshold):
-		ImageFilter(src), a_Threshold(threshold) {
-}
-
-ImgRef ThresholdFilter::GetImage() {
-	ImgRef img = a_Source.get()->GetImage();
-	imaqThreshold(img.get(), img.get(), 0, a_Threshold, FALSE, 0.0);
-	return img;
-}
-
 TargetDetector::TargetDetector(string ip):
 		a_DebugMode(true), a_Processing(false),
 		a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
