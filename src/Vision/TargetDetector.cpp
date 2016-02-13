@@ -2,14 +2,58 @@
 
 using namespace std;
 
+AxisImageSource::AxisImageSource(string ip):
+		a_Camera(ip) {
+}
+
+bool AxisImageSource::IsNewImageAvailable() {
+	return a_Camera.IsFreshImage();
+}
+
+ImgRef AxisImageSource::GetImage() {
+	if (IsNewImageAvailable()) {
+		Image *image = imaqCreateImage(IMAQ_IMAGE_RGB, DEFAULT_BORDER_SIZE);
+		a_Camera.GetImage(image);
+		a_CurrentImage.reset(image, imaqDispose);
+	}
+	return a_CurrentImage;
+}
+
+StillImageSource::StillImageSource(string filename) {
+	Image *image = imaqCreateImage(IMAQ_IMAGE_RGB, DEFAULT_BORDER_SIZE);
+	imaqReadFile(image, filename.c_str(), nullptr, nullptr);
+	a_Image.reset(image, imaqDispose);
+}
+
+bool StillImageSource::IsNewImageAvailable() {
+	return true;
+}
+
+ImgRef StillImageSource::GetImage() {
+	return a_Image;
+}
+
+ImageFilter::ImageFilter(shared_ptr<ImageSource> source):
+		a_Source(source) {
+}
+
+ThresholdFilter::ThresholdFilter(ImgSrcRef src, int threshold):
+		ImageFilter(src), a_Threshold(threshold) {
+}
+
+ImgRef ThresholdFilter::GetImage() {
+	ImgRef img = a_Source.get()->GetImage();
+	imaqThreshold(img.get(), img.get(), 0, a_Threshold, FALSE, 0.0);
+	return img;
+}
+
 TargetDetector::TargetDetector(string ip):
-				a_DebugMode(true), a_Processing(false),
-				a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
-				a_Camera(ip) {
+		a_DebugMode(true), a_Processing(false),
+		a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
+		a_Camera(ip) {
 }
 
 TargetDetector::~TargetDetector() {
-
 }
 
 void TargetDetector::CheckIMAQError(int rval, string desc) {
@@ -71,16 +115,16 @@ void TargetDetector::ImageProcessingTask() {
 	// Target template image
 	Image *targetTemplate = imaqCreateImage(IMAQ_IMAGE_U8, 0);
 	CheckIMAQError(
-			imaqReadFile(targetTemplate, "/home/lvuser/target_template.png", NULL, NULL),
+			imaqReadFile(targetTemplate, "/home/lvuser/target_template.png", nullptr, nullptr),
 			"imaqReadFile(targetTemplate)");
 
 	// Normalize the target template
 	CheckIMAQError(
-			imaqLookup(targetTemplate, targetTemplate, lookupTable, NULL),
+			imaqLookup(targetTemplate, targetTemplate, lookupTable, nullptr),
 			"imaqLookup");
 
 	// Holds the results of the shape match
-	ShapeReport* shapeReport = NULL;
+	ShapeReport* shapeReport = nullptr;
 	int targetMatchesFound;
 
 	// Images will be copied into this image as they arrive from the camera
@@ -114,13 +158,13 @@ void TargetDetector::ImageProcessingTask() {
 		// Extract luminance plane
 		Image *luminancePlane = imaqCreateImage(IMAQ_IMAGE_U8, 0);
 		CheckIMAQError(
-				imaqExtractColorPlanes(curImage, IMAQ_HSL, NULL, NULL, luminancePlane),
+				imaqExtractColorPlanes(curImage, IMAQ_HSL, nullptr, nullptr, luminancePlane),
 				"imaqExtractColorPlanes");
 
 		// Auto thresholding (find bright objects)
 		ThresholdData *threshData = imaqAutoThreshold2(
-				curImage, luminancePlane, 2, IMAQ_THRESH_CLUSTERING, NULL);
-		if (threshData == NULL) {
+				curImage, luminancePlane, 2, IMAQ_THRESH_CLUSTERING, nullptr);
+		if (threshData == nullptr) {
 			CheckIMAQError(0, "imaqAutoThreshold2");
 		}
 
@@ -136,7 +180,7 @@ void TargetDetector::ImageProcessingTask() {
 
 		shapeReport = imaqMatchShape(curImage, curImage, targetTemplate,
 				TRUE, 1, 0.5, &targetMatchesFound);
-		if (shapeReport == NULL) {
+		if (shapeReport == nullptr) {
 			CheckIMAQError(0, "imaqMatchShape");
 		}
 
