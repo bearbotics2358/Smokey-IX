@@ -8,7 +8,7 @@
 #ifndef SRC_LIFTER_H_
 #define SRC_LIFTER_H_
 
-class Lifter // This is for a motor that extends an arm, like a tape measure- uses a Quadrature Encoder
+class Lifter // This is for a motor that extends an arm, like a tape measure- uses a Quadrature Encoder- lifts the bot
 {
 public:
 	Lifter(int TalonPort, int EncoderAPort, int EncoderBPort);
@@ -24,9 +24,6 @@ private:
 	CanTalonSRX LifterC;
 
 	Encoder EncoderC;
-
-	DigitalInput pulseA;
-	DigitalInput pulseB;
 };
 
 

@@ -14,8 +14,6 @@ a_BLOne(BACK_LEFT_ONE),
 a_BLTwo(BACK_LEFT_TWO),
 a_BROne(BACK_RIGHT_ONE),
 a_BRTwo(BACK_RIGHT_TWO),
-a_LeftEncoder(LEFT_ENCODER_PORT_A,LEFT_ENCODER_PORT_B),
-a_RightEncoder(RIGHT_ENCODER_PORT_A,RIGHT_ENCODER_PORT_B),
 a_Winch(WINCH, WINCH_PORT_A, WINCH_PORT_B),
 a_Finger(FINGER, FINGER_ENCODER_PORT, 0, 0), // Third argument is our upper limit on the encoder, fourth is our lower limit
 a_Collector(COLLECTOR, COLLECTOR_ENCODER_PORT, 0, 0), // See above
@@ -26,8 +24,8 @@ a_Gyro(I2C::kMXP), // Didn't work because we used smartdashboard in the construc
 a_Left(a_BLOne, a_BLTwo, a_LeftSol, LEFT_ENCODER_PORT_A,LEFT_ENCODER_PORT_B),
 a_Right(a_BROne, a_BRTwo, a_LeftSol,RIGHT_ENCODER_PORT_A, RIGHT_ENCODER_PORT_B),
 a_Tank(a_Left,a_Right),
-a_AutoState(kAutoIdle),
-a_TargetDetector("10.23.58.11") {
+a_AutoState(kAutoIdle)
+/* a_TargetDetector("10.23.58.11") */ {
 }
 
 void SmokeyIX::RobotInit() {
@@ -162,10 +160,6 @@ void SmokeyIX::TeleopPeriodic() {
 	SmartDashboard::PutNumber("turnToCAngle", turnToCAngle);
 	// a_Tank.Update(a_Joystick, a_Joystick2);
 	a_Gyro.Update();
-	SmartDashboard::PutNumber("Left Encoder (Distance)", a_LeftEncoder.GetDistance());
-	SmartDashboard::PutNumber("Left Encoder (Raw)", a_LeftEncoder.GetRaw());
-	SmartDashboard::PutNumber("Right Encoder (Distance)", a_RightEncoder.GetDistance());
-	SmartDashboard::PutNumber("Right Encoder (Raw)", a_RightEncoder.GetRaw());
 	SmartDashboard::PutNumber("Gyro value", a_Gyro.GetAngle());
 	SmartDashboard::PutNumber("Shooter", a_Shooter.GetPosition());
 	SmartDashboard::PutNumber("Winch", a_Winch.GetLength());
@@ -203,8 +197,6 @@ void SmokeyIX::TestPeriodic() {
 	//Roller Test
 	a_Roller.Update(-1.0 * a_Joystick.GetRawButton(9));
 
-	SmartDashboard::PutNumber("Left", a_LeftEncoder.GetDistance());
-	SmartDashboard::PutNumber("Right", a_RightEncoder.GetDistance());
 	SmartDashboard::PutNumber("Shooter", a_Shooter.GetPosition());
 	SmartDashboard::PutNumber("Winch", a_Winch.GetLength());
 

@@ -9,9 +9,7 @@
 
 Lifter::Lifter(int TalonPort, int EncoderAPort, int EncoderBPort)
 :	LifterC(TalonPort),
-	EncoderC(EncoderAPort, EncoderBPort),
-	pulseA(EncoderAPort),
-	pulseB(EncoderBPort)
+	EncoderC(EncoderAPort, EncoderBPort)
 {
 
 }

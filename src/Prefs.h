@@ -10,7 +10,7 @@
 
 
 #define JOYSTICK_PORT 0
-#define JOYSTICKTWO_PORT 3
+#define JOYSTICKTWO_PORT 5
 
 #define PDP_PORT 3
 
