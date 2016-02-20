@@ -11,6 +11,7 @@ TargetDetector::TargetDetector(string ip):
 		a_ImageCaptureTask(&TargetDetector::ImageCaptureTask, this),
 		a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
 		a_Camera(ip) {
+	a_Camera.WriteResolution(AxisCamera::kResolution_640x480);
 }
 
 TargetDetector::~TargetDetector() {
