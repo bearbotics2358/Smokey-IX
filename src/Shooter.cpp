@@ -6,14 +6,15 @@
  */
 
 #include "Shooter.h"
+#include <math.h>
 
 bool cockIt = false;
 bool fireIt = false;
-int cockValue = 0;
+int cockValue = 800;
+int armedTolerance = 100; // ROUGHLY ten degrees
 
 Shooter::Shooter(int TalonPort, int AbsPort)
-:
-	ShooterC(TalonPort),
+:   ShooterC(TalonPort),
 	EncoderC(AbsPort)
 {
 
@@ -26,21 +27,19 @@ Shooter::~Shooter()
 
 void Shooter::Update()
 {
-	if(cockIt)
-	{
-		if(EncoderC.GetValue() < cockValue)
-		{
+	if(cockIt) {
+		if( fabs(EncoderC.GetValue() - cockValue) > armedTolerance) {
 			ShooterC.Set(0.5);
-		}
-		else
-		{
+		} else {
 			cockIt = false;
+			ShooterC.Set(0);
 		}
-	}
-	else if(fireIt)
-	{
-		ShooterC.Set(.5);
+	} else if(fireIt) {
+		ShooterC.Set(0.5);
 		fireIt = false;
+		cockIt = true;
+	} else {
+		ShooterC.Set(0);
 	}
 }
 

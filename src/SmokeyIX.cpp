@@ -25,21 +25,26 @@ a_Left(a_BLOne, a_BLTwo, a_LeftSol, LEFT_ENCODER_PORT_A,LEFT_ENCODER_PORT_B),
 a_Right(a_BROne, a_BRTwo, a_LeftSol,RIGHT_ENCODER_PORT_A, RIGHT_ENCODER_PORT_B),
 a_Tank(a_Left,a_Right),
 a_AutoState(kAutoIdle)
-/* a_TargetDetector("10.23.58.11") */ {
+{
+
 }
 
-void SmokeyIX::RobotInit() {
+void SmokeyIX::RobotInit()
+{
 	// a_Compressor.SetClosedLoopControl(true);
 	a_LeftSol.Set(DoubleSolenoid::kForward);
 	a_Tank.Init();
+	// duinoPort.Write("a",8);
 }
 
-void SmokeyIX::AutonomousInit() {
+void SmokeyIX::AutonomousInit()
+{
 	a_Gyro.Cal();
 	a_AutoState = kMoveUnderLowBar;
 }
 
-void SmokeyIX::AutonomousPeriodic() {
+void SmokeyIX::AutonomousPeriodic()
+{
 	AutoState nextState = a_AutoState;
 
 	int tankDistance = 0;
@@ -146,20 +151,52 @@ void SmokeyIX::AutonomousPeriodic() {
 
 }
 
-void SmokeyIX::TeleopInit() {
+void SmokeyIX::TeleopInit()
+{
 	a_Gyro.Cal();
 }
 
-void SmokeyIX::TeleopPeriodic() {
-	const int shootSpotDistance = 0;
-	const double turnAngle = 60.0;
-	const double turnAroundAngle = (180 * M_1_PI) * asin(48/(sqrt(pow(shootSpotDistance,2) - 96*sqrt(3)*shootSpotDistance + 9216)));
-	const double turnToCAngle = 180.0 - turnAngle - turnAroundAngle;
+void SmokeyIX::TeleopPeriodic()
+{
 
-	SmartDashboard::PutNumber("turnAroundAngle", turnAroundAngle);
-	SmartDashboard::PutNumber("turnToCAngle", turnToCAngle);
-	// a_Tank.Update(a_Joystick, a_Joystick2);
+	a_Tank.Update(a_Joystick, a_Joystick2);
 	a_Gyro.Update();
+
+	if(a_Joystick.GetRawButton(1)) {
+		a_Shooter.Set(a_Joystick.GetRawButton(1));
+	} else {
+		a_Shooter.Set(0);
+	}
+
+	/*
+	if(a_Joystick.GetRawButton(2)) {
+		a_Shooter.Fire();
+	}
+
+	a_Shooter.Update();
+	*/
+
+	a_Collector.Update(a_Joystick, 3, 5, 0.5);
+
+	if (a_Joystick.GetRawButton(4)) {
+		a_Winch.Update(a_Joystick.GetRawButton(4));
+	} else if (a_Joystick.GetRawButton(6)) {
+		a_Winch.Update(-1.0 * a_Joystick.GetRawButton(6));
+	} else {
+		a_Winch.Update(0);
+	}
+
+
+	// a_Finger.Update(a_Joystick, 7, 8, 0.5);
+
+	//Roller Test
+	if(a_Joystick.GetRawButton(9)) {
+		a_Roller.Update(1.0 );
+	} else {
+		a_Roller.Update(0);
+	}
+
+
 	SmartDashboard::PutNumber("Gyro value", a_Gyro.GetAngle());
 	SmartDashboard::PutNumber("Shooter", a_Shooter.GetPosition());
 	SmartDashboard::PutNumber("Winch", a_Winch.GetLength());
@@ -173,15 +210,22 @@ void SmokeyIX::TeleopPeriodic() {
 	//Roller Test Code
 }
 
-void SmokeyIX::TestInit() {
+void SmokeyIX::TestInit()
+{
 	a_Compressor.SetClosedLoopControl(true);
 	a_LeftSol.Set(DoubleSolenoid::kForward);
 }
 
-void SmokeyIX::TestPeriodic() {
+void SmokeyIX::TestPeriodic()
+{
 	a_Tank.Update(a_Joystick, a_Joystick2);
 
-	a_Shooter.Set(a_Joystick.GetRawButton(1));
+	if(a_Joystick.GetRawButton(1)) {
+		a_Shooter.Set(a_Joystick.GetRawButton(1));
+	} else {
+		a_Shooter.Set(0);
+	}
+
 
 	a_Collector.Update(a_Joystick, 3, 5, 0.5);
 
@@ -189,13 +233,20 @@ void SmokeyIX::TestPeriodic() {
 		a_Winch.Update(a_Joystick.GetRawButton(4));
 	} else if (a_Joystick.GetRawButton(6)) {
 		a_Winch.Update(-1.0 * a_Joystick.GetRawButton(6));
+	} else {
+		a_Winch.Update(0);
 	}
 
 
 	// a_Finger.Update(a_Joystick, 7, 8, 0.5);
 
 	//Roller Test
-	a_Roller.Update(-1.0 * a_Joystick.GetRawButton(9));
+	if(a_Joystick.GetRawButton(9)) {
+		a_Roller.Update(-1.0 );
+	} else {
+		a_Roller.Update(0);
+	}
+
 
 	SmartDashboard::PutNumber("Shooter", a_Shooter.GetPosition());
 	SmartDashboard::PutNumber("Winch", a_Winch.GetLength());

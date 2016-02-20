@@ -38,13 +38,12 @@ void PivotArm::Set(float value, uint8_t syncGroup)
 
 void PivotArm::Update(Joystick &stick, int port1, int port2, float value)
 {
-	if(stick.GetRawButton(port1))
-	{
+	if(stick.GetRawButton(port1)) {
 		ArmC.Set(value);
-	}
-	else if(stick.GetRawButton(port2))
-	{
+	} else if(stick.GetRawButton(port2)) {
 		ArmC.Set(-1.0 * value);
+	} else {
+		ArmC.Set(0);
 	}
 
 }
