@@ -9,28 +9,34 @@
 class ShifterController
 {
 public:
-	ShifterController(uint32_t LeftMotor, uint32_t RightMotor, DoubleSolenoid &Shift, int LeftPort, int RightPort);
+	ShifterController(uint32_t leftMotor, uint32_t rightMotor, DoubleSolenoid &shifter,
+					  uint32_t encPort1, uint32_t encPort2);
 	~ShifterController();
+
+	void SetEncoderInverted(bool inverted);
+	void SetDriveInverted(bool inverted);
+
 	void Set(float value, uint8_t syncGroup = 0);
+	float Get();
+
+	void Disable();
+
 	void ShiftToggle();
 	void Shift(int state);
 	void ShiftLow();
 	void ShiftHigh();
-	float Get();
-	void Disable();
-	void SetInverted(bool isInverted);
-	bool GetInverted();
+	
 	float GetDistance();
 	void ResetEncoder();
 
 	void PIDWrite(float output);
 
 private:
-	CanTalonSRX LeftC;
-	CanTalonSRX RightC;
-	DoubleSolenoid &Sol;
+	CanTalonSRX _leftMotor;
+	CanTalonSRX _rightMotor;
+	DoubleSolenoid &_solenoid;
 
-	Encoder EncoderC;
+	Encoder _encoder;
 
-	float m_speed;
+	float _speed;
 };

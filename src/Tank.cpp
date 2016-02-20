@@ -26,6 +26,7 @@ Tank::Tank(ShifterController &Left, ShifterController &Right):
 		a_LeftSide(Left),
 		a_RightSide(Right)
 {
+	a_LeftSide.SetEncoderInverted(true);
 }
 
 Tank::~Tank()
@@ -35,15 +36,15 @@ Tank::~Tank()
 void Tank::Init()
 {
 	a_ControlTypeChooser.AddDefault(CONTROL_TYPE_TANK_TWO_JOYSTICKS_KEY,
-			               (void *)&CONTROL_TYPE_TANK_TWO_JOYSTICKS);
+									(void *)&CONTROL_TYPE_TANK_TWO_JOYSTICKS);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_TANK_GAMEPAD_KEY,
-			              (void *)&CONTROL_TYPE_TANK_GAMEPAD);
+									(void *)&CONTROL_TYPE_TANK_GAMEPAD);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_ARCADE_ONE_JOYSTICK_KEY,
-			              (void *)&CONTROL_TYPE_ARCADE_ONE_JOYSTICK);
+									(void *)&CONTROL_TYPE_ARCADE_ONE_JOYSTICK);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK_KEY,
-			              (void *)&CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK);
+									(void *)&CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS_KEY,
-			              (void *)&CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS);
+									(void *)&CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS);
 	SmartDashboard::PutData(CONTROL_TYPE_KEY, &a_ControlTypeChooser);
 
 	SmartDashboard::PutNumber(ARCADE_TUNING_PARAM_A_KEY, ARCADE_TUNING_PARAM_A_DEFAULT);
@@ -206,7 +207,7 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 		break;
 	case CONTROL_TYPE_TANK_GAMEPAD:
 		left = stick2.GetRawAxis(1);
-		right = stick2.GetRawAxis(5);
+		right = -1.0 * stick2.GetRawAxis(4);
 		break;
 	case CONTROL_TYPE_ARCADE_ONE_JOYSTICK:
 		EtherArcade(stick.GetY(), stick.GetX() * -1.0, a, b, left, right);
@@ -221,6 +222,12 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 		right *= -1.0;
 		break;
 	}
+
+	SmartDashboard::PutNumber("Left Encoder", a_LeftSide.GetDistance());
+	SmartDashboard::PutNumber("Right Encoder", a_RightSide.GetDistance());
+
+	SmartDashboard::PutNumber("Left Tank Input", left);
+	SmartDashboard::PutNumber("Right Tank Input", right);
 
 	a_LeftSide.Set(left);
 	a_RightSide.Set(right);

@@ -2,12 +2,14 @@
 #include "LiveWindow/LiveWindow.h"
 
 
-ShifterController::ShifterController(uint32_t LeftMotor, uint32_t RightMotor, DoubleSolenoid &Shift, int LeftPort, int RightPort)
-: LeftC(LeftMotor),
-  RightC(RightMotor),
-  Sol(Shift),
-  EncoderC(LeftPort, RightPort),
-  m_speed(0)
+ShifterController::ShifterController(uint32_t leftMotor, uint32_t rightMotor,
+									 DoubleSolenoid &shifter,
+									 uint32_t encPort1, uint32_t encPort2):
+		_leftMotor(leftMotor),
+		_rightMotor(rightMotor),
+		_solenoid(shifter),
+		_encoder(encPort1, encPort2),
+		_speed(0)
 {
 
 }
@@ -16,28 +18,37 @@ ShifterController::~ShifterController()
 {
 }
 
+void ShifterController::SetEncoderInverted(bool inverted)
+{
+	_encoder.SetReverseDirection(inverted);
+}
+
+void ShifterController::SetDriveInverted(bool inverted)
+{
+}
+
 void ShifterController::Set(float speed, uint8_t syncGroup)
 {
-	RightC.Set(speed);
-	LeftC.Set(speed);
-	m_speed = speed;
+	_rightMotor.Set(speed);
+	_leftMotor.Set(speed);
+	_speed = speed;
 }
 
 void ShifterController::ShiftToggle()
 {
-	if(Sol.Get() == DoubleSolenoid::kForward) {
-		Sol.Set(DoubleSolenoid::kReverse);
+	if(_solenoid.Get() == DoubleSolenoid::kForward) {
+		_solenoid.Set(DoubleSolenoid::kReverse);
 	} else {
-		Sol.Set(DoubleSolenoid::kForward);
+		_solenoid.Set(DoubleSolenoid::kForward);
 	}
 }
 
 void ShifterController::Shift(int shift)
 {
 	if(shift == 0) {
-		Sol.Set(DoubleSolenoid::kReverse);
+		_solenoid.Set(DoubleSolenoid::kReverse);
 	} else {
-		Sol.Set(DoubleSolenoid::kForward);
+		_solenoid.Set(DoubleSolenoid::kForward);
 	}
 }
 
@@ -53,34 +64,24 @@ void ShifterController::ShiftHigh()
 
 float ShifterController::Get()
 {
-	return m_speed;
+	return _speed;
 }
 
 void ShifterController::Disable()
 {
 	// See Talon.Disable()
-	RightC.Set(0);
-	LeftC.Set(0);
-}
-
-void ShifterController::SetInverted(bool isInverted)
-{
-
-}
-
-bool ShifterController::GetInverted()
-{
-	return false;
+	_rightMotor.Set(0);
+	_leftMotor.Set(0);
 }
 
 float ShifterController::GetDistance()
 {
-	return EncoderC.GetDistance();
+	return _encoder.GetDistance();
 }
 
 void ShifterController::ResetEncoder()
 {
-	EncoderC.Reset();
+	_encoder.Reset();
 }
 
 void ShifterController::PIDWrite(float output)
