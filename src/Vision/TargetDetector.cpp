@@ -3,6 +3,8 @@
 
 using namespace std;
 
+typedef unique_ptr<Image, decltype(&imaqDispose)> UniqueImgPtr;
+
 TargetDetector::TargetDetector(string ip):
 		a_DebugMode(true), a_Processing(false),
 		a_ImageCaptureTask(&TargetDetector::ImageCaptureTask, this),
@@ -94,14 +96,14 @@ void TargetDetector::ImageProcessingTask() {
 	}
 
 	// Target template image
-	Image *targetTemplate = imaqCreateImage(IMAQ_IMAGE_U8, 0);
+	UniqueImgPtr targetTemplate(imaqCreateImage(IMAQ_IMAGE_U8, 0), imaqDispose);
 	CheckIMAQError(
-			imaqReadFile(targetTemplate, "/home/lvuser/target_template.png", nullptr, nullptr),
+			imaqReadFile(targetTemplate.get(), "/home/lvuser/target_template.png", nullptr, nullptr),
 			"imaqReadFile(targetTemplate)");
 
 	// Normalize the target template
 	CheckIMAQError(
-			imaqLookup(targetTemplate, targetTemplate, lookupTable, nullptr),
+			imaqLookup(targetTemplate.get(), targetTemplate.get(), lookupTable, nullptr),
 			"imaqLookup");
 
 	// Holds the results of the shape match
@@ -109,10 +111,10 @@ void TargetDetector::ImageProcessingTask() {
 	int targetMatchesFound;
 
 	// Images will be copied into this image as they arrive from the camera
-	Image *curImage = imaqCreateImage(IMAQ_IMAGE_HSL, 0);
+	UniqueImgPtr curImage(imaqCreateImage(IMAQ_IMAGE_HSL, 0), imaqDispose);
 
 	// Holds the result of applying a threshold to the current image
-	Image *postThreshold = imaqCreateImage(IMAQ_IMAGE_U8, 0);
+	UniqueImgPtr postThreshold(imaqCreateImage(IMAQ_IMAGE_U8, 0), imaqDispose);
 
 	while (true) {
 		if (!a_Processing) {
@@ -132,38 +134,38 @@ void TargetDetector::ImageProcessingTask() {
 					"imaqGetImageSize");
 
 			CheckIMAQError(
-					imaqDuplicate(curImage, image),
+					imaqDuplicate(curImage.get(), image),
 					"imaqDuplicate");
 		}
 
 		// Extract luminance plane
-		Image *luminancePlane = imaqCreateImage(IMAQ_IMAGE_U8, 0);
+		UniqueImgPtr luminancePlane(imaqCreateImage(IMAQ_IMAGE_U8, 0), imaqDispose);
 		CheckIMAQError(
-				imaqExtractColorPlanes(curImage, IMAQ_HSL, nullptr, nullptr, luminancePlane),
+				imaqExtractColorPlanes(curImage.get(), IMAQ_HSL, nullptr, nullptr, luminancePlane.get()),
 				"imaqExtractColorPlanes");
-		SaveImage("01-extract-luminance", luminancePlane);
+		SaveImage("01-extract-luminance", luminancePlane.get());
 
 		// Auto thresholding (find bright objects)
 		ThresholdData *threshData = imaqAutoThreshold2(
-				curImage, luminancePlane, 2, IMAQ_THRESH_CLUSTERING, nullptr);
+				curImage.get(), luminancePlane.get(), 2, IMAQ_THRESH_CLUSTERING, nullptr);
 		if (threshData == nullptr) {
 			CheckIMAQError(0, "imaqAutoThreshold2");
 		}
-		SaveImage("02-threshold", curImage);
+		SaveImage("02-threshold", curImage.get());
 
 		// Filters particles based on their size
 		CheckIMAQError(
-				imaqSizeFilter(curImage, curImage, TRUE, 3, IMAQ_KEEP_LARGE, &structElem),
+				imaqSizeFilter(curImage.get(), curImage.get(), TRUE, 3, IMAQ_KEEP_LARGE, &structElem),
 				"imaqSizeFilter");
-		SaveImage("03-remove-small-particles", curImage);
+		SaveImage("03-remove-small-particles", curImage.get());
 
 		// Fill holes
 		CheckIMAQError(
-				imaqFillHoles(curImage, curImage, TRUE),
+				imaqFillHoles(curImage.get(), curImage.get(), TRUE),
 				"imaqFillHoles");
-		SaveImage("04-fill-holes", curImage);
+		SaveImage("04-fill-holes", curImage.get());
 
-		shapeReport = imaqMatchShape(curImage, curImage, targetTemplate,
+		shapeReport = imaqMatchShape(curImage.get(), curImage.get(), targetTemplate.get(),
 				TRUE, 1, 0.5, &targetMatchesFound);
 		if (shapeReport == nullptr) {
 			CheckIMAQError(0, "imaqMatchShape");
@@ -182,10 +184,5 @@ void TargetDetector::ImageProcessingTask() {
 		}
 
 		imaqDispose(shapeReport);
-		imaqDispose(luminancePlane);
 	}
-
-	imaqDispose(curImage);
-	imaqDispose(postThreshold);
-	imaqDispose(targetTemplate);
 }
