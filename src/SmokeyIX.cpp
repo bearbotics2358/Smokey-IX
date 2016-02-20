@@ -20,8 +20,7 @@ a_Gyro(I2C::kMXP), // Didn't work because we used smartdashboard in the construc
 a_Left(BACK_LEFT_ONE, BACK_LEFT_TWO, a_LeftSol, LEFT_ENCODER_PORT_A, LEFT_ENCODER_PORT_B),
 a_Right(BACK_RIGHT_ONE, BACK_RIGHT_TWO, a_LeftSol, RIGHT_ENCODER_PORT_A, RIGHT_ENCODER_PORT_B),
 a_Tank(a_Left,a_Right),
-a_AutoState(kAutoIdle),
-a_DuinoPort(9600, SerialPort::kUSB)
+a_AutoState(kAutoIdle)
 {
 
 }
@@ -31,7 +30,6 @@ void SmokeyIX::RobotInit()
 	// a_Compressor.SetClosedLoopControl(true);
 	a_LeftSol.Set(DoubleSolenoid::kForward);
 	a_Tank.Init();
-	a_DuinoPort.Write("A",8);
 }
 
 void SmokeyIX::AutonomousInit()

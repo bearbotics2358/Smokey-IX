@@ -76,8 +76,6 @@ private:
 
 	AutoState a_AutoState;
 
-	SerialPort a_DuinoPort;
-
 };
 
 #endif /* SRC_SMOKEYIX_H_ */
