@@ -1,3 +1,7 @@
 *.o
 Debug/
 Release/
+out/
+build.Makefile
+FRCUserProgram.target.mk
+Makefile
