@@ -234,6 +234,15 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 		break;
 	}
 
+	if (fabs(left) < kJoystickDeadzone)
+	{
+		left = 0.0;
+	}
+	if (fabs(right) < kJoystickDeadzone)
+	{
+		right = 0.0;
+	}
+
 	SmartDashboard::PutNumber("Left Encoder Distance", a_LeftSide.GetDistance());
 	SmartDashboard::PutNumber("Right Encoder Distance", a_RightSide.GetDistance());
 

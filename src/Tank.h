@@ -37,6 +37,8 @@ private:
 	static const std::string ARCADE_TUNING_PARAM_B_KEY;
 	static const double      ARCADE_TUNING_PARAM_B_DEFAULT;
 
+	const double kJoystickDeadzone = 0.08;
+
 	ShifterController &a_LeftSide;
 	ShifterController &a_RightSide;
 
