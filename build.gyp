@@ -11,13 +11,10 @@
         '-std=c++1y'
       ],
       'include_dirs': [
-        '/home/sigkill/wpilib/cpp/current/include',
         'src'
       ],
       'libraries': [
-        '-L/home/sigkill/wpilib/cpp/current/lib',
         '-lwpi',
-        '-Wl,-rpath,/opt/GenICam_v2_3/bin/Linux_armv7-a'
       ],
       'sources': [
         'src/JrimmyGyro.cpp',
@@ -33,6 +30,17 @@
         'src/Vision/SimpleFilters.cpp',
         'src/Vision/StillImageSource.cpp',
         'src/Vision/TargetDetector.cpp'
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'include_dirs': [
+            '~/wpilib/cpp/current/include'
+          ],
+          'libraries': [
+            '-L~/wpilib/cpp/current/lib',
+            '-Wl,-rpath,/opt/GenICam_v2_3/bin/Linux_armv7-a'
+          ]
+        }]
       ]
     }
   ]
