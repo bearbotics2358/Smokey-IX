@@ -25,24 +25,18 @@ void ShifterController::Set(float speed, uint8_t syncGroup)
 
 void ShifterController::ShiftToggle()
 {
-	if(Sol.Get() == DoubleSolenoid::kForward)
-	{
+	if(Sol.Get() == DoubleSolenoid::kForward) {
 		Sol.Set(DoubleSolenoid::kReverse);
-	}
-	else
-	{
+	} else {
 		Sol.Set(DoubleSolenoid::kForward);
 	}
 }
 
 void ShifterController::Shift(int shift)
 {
-	if(shift == 0)
-	{
+	if(shift == 0) {
 		Sol.Set(DoubleSolenoid::kReverse);
-	}
-	else
-	{
+	} else {
 		Sol.Set(DoubleSolenoid::kForward);
 	}
 }
