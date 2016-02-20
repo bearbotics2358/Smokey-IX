@@ -7,11 +7,12 @@
 
 #include "Shooter.h"
 #include <math.h>
+#include "SmokeyIX.h"
 
-bool cockIt = false;
+bool cockIt = true;
 bool fireIt = false;
-int cockValue = 800;
-int armedTolerance = 100; // ROUGHLY ten degrees
+int cockValue = 2800;
+int armedTolerance = 200; // ROUGHLY ten degrees
 
 Shooter::Shooter(int TalonPort, int AbsPort)
 :   ShooterC(TalonPort),
@@ -25,7 +26,7 @@ Shooter::~Shooter()
 
 }
 
-void Shooter::Update()
+void Shooter::Update(Joystick &a_Stick)
 {
 	if(cockIt) {
 		if( fabs(EncoderC.GetValue() - cockValue) > armedTolerance) {
@@ -35,9 +36,14 @@ void Shooter::Update()
 			ShooterC.Set(0);
 		}
 	} else if(fireIt) {
-		ShooterC.Set(0.5);
-		fireIt = false;
-		cockIt = true;
+		ShooterC.Set(1);
+		if(a_Stick.GetRawButton(1))
+		{
+			fireIt = true;
+		} else {
+			fireIt = false;
+			cockIt = true;
+		}
 	} else {
 		ShooterC.Set(0);
 	}
@@ -63,7 +69,7 @@ void Shooter::Fire()
 	fireIt = true;
 }
 
-void Shooter::Set(int value)
+void Shooter::Set(float value)
 {
 	ShooterC.Set(value);
 }
