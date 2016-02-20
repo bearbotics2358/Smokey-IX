@@ -31,13 +31,18 @@ void SmokeyIX::RobotInit()
 	// a_Compressor.SetClosedLoopControl(true);
 	a_LeftSol.Set(DoubleSolenoid::kForward);
 	a_Tank.Init();
-	a_DuinoPort.Write("A",8);
+}
+
+void SmokeyIX::DisabledInit()
+{
+	a_Tank.Disable();
 }
 
 void SmokeyIX::AutonomousInit()
 {
 	a_Gyro.Cal();
 	a_AutoState = kMoveUnderLowBar;
+	a_Tank.Enable();
 }
 
 void SmokeyIX::AutonomousPeriodic()
@@ -151,6 +156,7 @@ void SmokeyIX::AutonomousPeriodic()
 void SmokeyIX::TeleopInit()
 {
 	a_Gyro.Cal();
+	a_Tank.Enable();
 }
 
 void SmokeyIX::TeleopPeriodic()

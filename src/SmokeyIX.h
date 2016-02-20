@@ -38,6 +38,7 @@ class SmokeyIX : public IterativeRobot {
 public:
 	SmokeyIX(void);
 	void RobotInit(void);
+	void DisabledInit(void);
 	void TeleopInit(void);
 	void TeleopPeriodic(void);
 	void TestInit(void);

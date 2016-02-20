@@ -10,6 +10,10 @@ public:
 	~Tank();
 
 	void Init();
+
+	void Enable();
+	void Disable();
+
 	void Update(Joystick &stick, Joystick &stick2);
 	void AutonUpdate(double left, double right);
 	float GetDistance();

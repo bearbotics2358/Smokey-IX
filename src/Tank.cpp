@@ -26,7 +26,6 @@ Tank::Tank(ShifterController &Left, ShifterController &Right):
 		a_LeftSide(Left),
 		a_RightSide(Right)
 {
-	a_LeftSide.SetEncoderInverted(true);
 }
 
 Tank::~Tank()
@@ -49,6 +48,18 @@ void Tank::Init()
 
 	SmartDashboard::PutNumber(ARCADE_TUNING_PARAM_A_KEY, ARCADE_TUNING_PARAM_A_DEFAULT);
 	SmartDashboard::PutNumber(ARCADE_TUNING_PARAM_B_KEY, ARCADE_TUNING_PARAM_B_DEFAULT);
+}
+
+void Tank::Enable()
+{
+	a_LeftSide.Enable();
+	a_RightSide.Enable();
+}
+
+void Tank::Disable()
+{
+	a_LeftSide.Disable();
+	a_RightSide.Disable();
 }
 
 /*
@@ -223,8 +234,11 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 		break;
 	}
 
-	SmartDashboard::PutNumber("Left Encoder", a_LeftSide.GetDistance());
-	SmartDashboard::PutNumber("Right Encoder", a_RightSide.GetDistance());
+	SmartDashboard::PutNumber("Left Encoder Distance", a_LeftSide.GetDistance());
+	SmartDashboard::PutNumber("Right Encoder Distance", a_RightSide.GetDistance());
+
+	SmartDashboard::PutNumber("Left Encoder Rate", a_LeftSide.GetRate());
+	SmartDashboard::PutNumber("Right Encoder Rate", a_RightSide.GetRate());
 
 	SmartDashboard::PutNumber("Left Tank Input", left);
 	SmartDashboard::PutNumber("Right Tank Input", right);

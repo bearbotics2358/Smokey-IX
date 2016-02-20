@@ -10,13 +10,18 @@ public:
 					  uint32_t encPort1, uint32_t encPort2);
 	virtual ~ShifterController() = default;
 
+	void Enable();
+	void Disable();
+
+	void EnablePIDControl();
+	void DisablePIDControl();
+	bool IsPIDControlEnabled();
+
 	void SetEncoderInverted(bool inverted);
 	void SetDriveInverted(bool inverted);
 
 	void Set(float value, uint8_t syncGroup = 0);
 	float Get();
-
-	void Disable();
 
 	void ShiftToggle();
 	void Shift(int state);
@@ -24,16 +29,22 @@ public:
 	void ShiftHigh();
 
 	float GetDistance();
+	float GetRate();
 	void ResetEncoder();
 
 	void PIDWrite(float output);
 
 private:
+	const float kRateSetpointScaleFactor = 800.0;
+
 	CanTalonSRX _leftMotor;
 	CanTalonSRX _rightMotor;
 	DoubleSolenoid &_solenoid;
 
 	Encoder _encoder;
 
-	float _speed;
+	PIDController _pid;
+
+	bool _enabled = false;
+	float _speed = 0.0;
 };
