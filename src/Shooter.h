@@ -5,7 +5,6 @@
  *      Author: hstechclub
  */
 
-#include "CanTalonSRX.h"
 #include <WPILib.h>
 
 #ifndef SRC_SHOOTER_H_

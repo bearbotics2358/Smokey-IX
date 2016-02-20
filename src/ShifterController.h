@@ -3,7 +3,6 @@
 #include "SpeedController.h"
 #include "PIDOutput.h"
 #include "PWM.h"
-#include "CanTalonSRX.h"       // This file isn't indexed for some reason
 #include <WPILib.h>
 
 class ShifterController
@@ -25,7 +24,7 @@ public:
 	void Shift(int state);
 	void ShiftLow();
 	void ShiftHigh();
-	
+
 	float GetDistance();
 	void ResetEncoder();
 

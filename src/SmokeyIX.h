@@ -7,7 +7,6 @@
 
 #include "ShifterController.h"
 #include "Tank.h"
-#include "CanTalonSRX.h"
 #include "JrimmyGyro.h"
 #include "I2C.h"
 #include "PivotArm.h"
