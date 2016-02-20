@@ -4,6 +4,7 @@
 using namespace std;
 
 typedef unique_ptr<Image, decltype(&imaqDispose)> UniqueImgPtr;
+typedef unique_ptr<ShapeReport, decltype(&imaqDispose)> ShapeReportPtr;
 
 TargetDetector::TargetDetector(string ip):
 		a_DebugMode(true), a_Processing(false),
@@ -165,15 +166,17 @@ void TargetDetector::ImageProcessingTask() {
 				"imaqFillHoles");
 		SaveImage("04-fill-holes", curImage.get());
 
-		shapeReport = imaqMatchShape(curImage.get(), curImage.get(), targetTemplate.get(),
-				TRUE, 1, 0.5, &targetMatchesFound);
-		if (shapeReport == nullptr) {
+		ShapeReportPtr shapeReport(
+				imaqMatchShape(curImage.get(), curImage.get(), targetTemplate.get(),
+						TRUE, 1, 0.5, &targetMatchesFound),
+				imaqDispose);
+		if (!shapeReport) {
 			CheckIMAQError(0, "imaqMatchShape");
 		}
 
 		if (a_DebugMode) {
 			for (int i = 0; i < targetMatchesFound; i++) {
-				ShapeReport shape = shapeReport[i];
+				ShapeReport shape = shapeReport.get()[i];
 				if (shape.score >= 500.0) {
 					cout	<< "# Match " << i << endl
 							<< "- score: " << shape.score << endl
@@ -182,7 +185,5 @@ void TargetDetector::ImageProcessingTask() {
 				}
 			}
 		}
-
-		imaqDispose(shapeReport);
 	}
 }
