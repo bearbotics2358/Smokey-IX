@@ -78,6 +78,7 @@ private:
 
 	SerialPort a_DuinoPort;
 
+	TargetDetector a_TargetDetector;
 };
 
 #endif /* SRC_SMOKEYIX_H_ */

@@ -7,7 +7,7 @@ typedef unique_ptr<Image, decltype(&imaqDispose)> UniqueImgPtr;
 typedef unique_ptr<ShapeReport, decltype(&imaqDispose)> ShapeReportPtr;
 
 TargetDetector::TargetDetector(string ip):
-		a_DebugMode(true), a_Processing(false),
+		a_DebugMode(false), a_Processing(false),
 		a_ImageCaptureTask(&TargetDetector::ImageCaptureTask, this),
 		a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
 		a_Camera(ip) {
@@ -97,7 +97,7 @@ void TargetDetector::ImageProcessingTask() {
 	}
 
 	// Target template image
-	UniqueImgPtr targetTemplate(imaqCreateImage(IMAQ_IMAGE_U8, 0), imaqDispose);
+	UniqueImgPtr targetTemplate(imaqCreateImage(IMAQ_IMAGE_U8, 7), imaqDispose);
 	CheckIMAQError(
 			imaqReadFile(targetTemplate.get(), "/home/lvuser/target_template.png", nullptr, nullptr),
 			"imaqReadFile(targetTemplate)");
@@ -108,82 +108,98 @@ void TargetDetector::ImageProcessingTask() {
 			"imaqLookup");
 
 	// Holds the results of the shape match
-	ShapeReport* shapeReport = nullptr;
 	int targetMatchesFound;
 
 	// Images will be copied into this image as they arrive from the camera
 	UniqueImgPtr curImage(imaqCreateImage(IMAQ_IMAGE_HSL, 0), imaqDispose);
+	UniqueImgPtr curMonoImage(imaqCreateImage(IMAQ_IMAGE_U8, 7), imaqDispose);
 
-	// Holds the result of applying a threshold to the current image
-	UniqueImgPtr postThreshold(imaqCreateImage(IMAQ_IMAGE_U8, 0), imaqDispose);
+	// Used for benchmarking
+	uint64_t start, end;
 
 	while (true) {
-		if (!a_Processing) {
-			// So we don't peg the CPU
-			this_thread::sleep_for(chrono::milliseconds(10));
-			continue;
-		}
+		try {
+			if (!a_Processing) {
+				// So we don't peg the CPU
+				this_thread::sleep_for(chrono::milliseconds(10));
+				continue;
+			}
 
-		// Copy the current frame to this thread
-		{
-			lock_guard<mutex> guard(a_ImageMutex);
-			Image *image = a_Image.GetImaqImage();
+			// Copy the current frame to this thread
+			{
+				lock_guard<mutex> guard(a_ImageMutex);
+				Image *image = a_Image.GetImaqImage();
 
-			int width, height;
+				int width, height;
+				CheckIMAQError(
+						imaqGetImageSize(image, &width, &height),
+						"imaqGetImageSize");
+
+				CheckIMAQError(
+						imaqDuplicate(curImage.get(), image),
+						"imaqDuplicate");
+			}
+
+			// Start the clock
+			start = GetFPGATime();
+
+			// Extract luminance plane
 			CheckIMAQError(
-					imaqGetImageSize(image, &width, &height),
-					"imaqGetImageSize");
+					imaqExtractColorPlanes(curImage.get(), IMAQ_HSL, nullptr, nullptr, curMonoImage.get()),
+					"imaqExtractColorPlanes");
+			SaveImage("01-extract-luminance", curMonoImage.get());
 
+			// Auto thresholding (find bright objects)
+			ThresholdData *threshData = imaqAutoThreshold2(
+					curMonoImage.get(), curMonoImage.get(), 2, IMAQ_THRESH_CLUSTERING, nullptr);
+			if (threshData == nullptr) {
+				CheckIMAQError(0, "imaqAutoThreshold2");
+			}
+			SaveImage("02-threshold", curMonoImage.get());
+
+			// Normalize to a binary image
 			CheckIMAQError(
-					imaqDuplicate(curImage.get(), image),
-					"imaqDuplicate");
-		}
+					imaqLookup(curMonoImage.get(), curMonoImage.get(), lookupTable, nullptr),
+					"imaqLookup");
+			SaveImage("03-normalize", curMonoImage.get());
 
-		// Extract luminance plane
-		UniqueImgPtr luminancePlane(imaqCreateImage(IMAQ_IMAGE_U8, 0), imaqDispose);
-		CheckIMAQError(
-				imaqExtractColorPlanes(curImage.get(), IMAQ_HSL, nullptr, nullptr, luminancePlane.get()),
-				"imaqExtractColorPlanes");
-		SaveImage("01-extract-luminance", luminancePlane.get());
+			// Filters particles based on their size
+			CheckIMAQError(
+					imaqSizeFilter(curMonoImage.get(), curMonoImage.get(), TRUE, 3, IMAQ_KEEP_LARGE, &structElem),
+					"imaqSizeFilter");
+			SaveImage("04-remove-small-particles", curMonoImage.get());
 
-		// Auto thresholding (find bright objects)
-		ThresholdData *threshData = imaqAutoThreshold2(
-				curImage.get(), luminancePlane.get(), 2, IMAQ_THRESH_CLUSTERING, nullptr);
-		if (threshData == nullptr) {
-			CheckIMAQError(0, "imaqAutoThreshold2");
-		}
-		SaveImage("02-threshold", curImage.get());
+			// Fill holes
+			CheckIMAQError(
+					imaqFillHoles(curMonoImage.get(), curMonoImage.get(), TRUE),
+					"imaqFillHoles");
+			SaveImage("05-fill-holes", curMonoImage.get());
 
-		// Filters particles based on their size
-		CheckIMAQError(
-				imaqSizeFilter(curImage.get(), curImage.get(), TRUE, 3, IMAQ_KEEP_LARGE, &structElem),
-				"imaqSizeFilter");
-		SaveImage("03-remove-small-particles", curImage.get());
+			ShapeReportPtr shapeReport(
+					imaqMatchShape(curMonoImage.get(), curMonoImage.get(), targetTemplate.get(),
+							TRUE, 1, 0.5, &targetMatchesFound),
+					imaqDispose);
+			if (!shapeReport) {
+				CheckIMAQError(0, "imaqMatchShape");
+			}
 
-		// Fill holes
-		CheckIMAQError(
-				imaqFillHoles(curImage.get(), curImage.get(), TRUE),
-				"imaqFillHoles");
-		SaveImage("04-fill-holes", curImage.get());
+			// Stop the clock and display the processing time
+			end = GetFPGATime();
+			SmartDashboard::PutNumber("Image Processing Time", (end-start));
 
-		ShapeReportPtr shapeReport(
-				imaqMatchShape(curImage.get(), curImage.get(), targetTemplate.get(),
-						TRUE, 1, 0.5, &targetMatchesFound),
-				imaqDispose);
-		if (!shapeReport) {
-			CheckIMAQError(0, "imaqMatchShape");
-		}
-
-		if (a_DebugMode) {
-			for (int i = 0; i < targetMatchesFound; i++) {
-				ShapeReport shape = shapeReport.get()[i];
-				if (shape.score >= 500.0) {
-					cout	<< "# Match " << i << endl
-							<< "- score: " << shape.score << endl
-							<< "- center: (" << shape.centroid.x << ", " << shape.centroid.y << ")" << endl
-							<< "- size: (" << shape.size << endl;
+			if (a_DebugMode) {
+				for (int i = 0; i < targetMatchesFound; i++) {
+					ShapeReport shape = shapeReport.get()[i];
+					if (shape.score >= 500.0) {
+						cout	<< "# Match " << i << endl
+								<< "- score: " << shape.score << endl
+								<< "- center: (" << shape.centroid.x << ", " << shape.centroid.y << ")" << endl
+								<< "- size: " << shape.size << endl;
+					}
 				}
 			}
+		} catch (runtime_error &ex) {
+			cout << ex.what() << endl;
 		}
 	}
 }
