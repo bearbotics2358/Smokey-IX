@@ -8,7 +8,7 @@
 #ifndef SRC_ANALOGENCODER_H_
 #define SRC_ANALOGENCODER_H_
 
-#include <WPILIb.h>
+#include <WPILib.h>
 
 class AnalogEncoder
 {
