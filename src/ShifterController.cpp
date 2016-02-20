@@ -14,10 +14,6 @@ ShifterController::ShifterController(uint32_t leftMotor, uint32_t rightMotor,
 
 }
 
-ShifterController::~ShifterController()
-{
-}
-
 void ShifterController::SetEncoderInverted(bool inverted)
 {
 	_encoder.SetReverseDirection(inverted);

@@ -8,7 +8,6 @@ class ShifterController: public PIDOutput
 public:
 	ShifterController(uint32_t leftMotor, uint32_t rightMotor, DoubleSolenoid &shifter,
 					  uint32_t encPort1, uint32_t encPort2);
-	~ShifterController();
 
 	void SetEncoderInverted(bool inverted);
 	void SetDriveInverted(bool inverted);
