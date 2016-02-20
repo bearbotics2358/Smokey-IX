@@ -1,11 +1,9 @@
 #pragma once
 
 #include "SpeedController.h"
-#include "PIDOutput.h"
-#include "PWM.h"
 #include <WPILib.h>
 
-class ShifterController
+class ShifterController: public PIDOutput
 {
 public:
 	ShifterController(uint32_t leftMotor, uint32_t rightMotor, DoubleSolenoid &shifter,
