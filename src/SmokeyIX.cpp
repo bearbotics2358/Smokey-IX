@@ -10,10 +10,6 @@ a_Joystick(JOYSTICK_PORT),
 a_Joystick2(JOYSTICKTWO_PORT),
 a_PDP(PDP_PORT),
 a_Compressor(PCM_PORT),
-a_BLOne(BACK_LEFT_ONE),
-a_BLTwo(BACK_LEFT_TWO),
-a_BROne(BACK_RIGHT_ONE),
-a_BRTwo(BACK_RIGHT_TWO),
 a_Winch(WINCH, WINCH_PORT_A, WINCH_PORT_B),
 a_Finger(FINGER, FINGER_ENCODER_PORT, 0, 0), // Third argument is our upper limit on the encoder, fourth is our lower limit
 a_Collector(COLLECTOR, COLLECTOR_ENCODER_PORT, 0, 0), // See above
@@ -21,10 +17,11 @@ a_Shooter(SHOOTER, SHOOTER_ENCODER_PORT),
 a_Roller(ROLLER, ROLLER_SWITCH_PORT),
 a_LeftSol(PCM_PORT, LEFT_SOL_PORT_ONE,LEFT_SOL_PORT_TWO),   // Must specify port # if not 0
 a_Gyro(I2C::kMXP), // Didn't work because we used smartdashboard in the constructor- wait to use it until after RobotInit()
-a_Left(a_BLOne, a_BLTwo, a_LeftSol, LEFT_ENCODER_PORT_A,LEFT_ENCODER_PORT_B),
-a_Right(a_BROne, a_BRTwo, a_LeftSol,RIGHT_ENCODER_PORT_A, RIGHT_ENCODER_PORT_B),
+a_Left(BACK_LEFT_ONE, BACK_LEFT_TWO, a_LeftSol, LEFT_ENCODER_PORT_A, LEFT_ENCODER_PORT_B),
+a_Right(BACK_RIGHT_ONE, BACK_RIGHT_TWO, a_LeftSol, RIGHT_ENCODER_PORT_A, RIGHT_ENCODER_PORT_B),
 a_Tank(a_Left,a_Right),
-a_AutoState(kAutoIdle)
+a_AutoState(kAutoIdle),
+a_DuinoPort(9600, SerialPort::kUSB)
 {
 
 }
@@ -34,7 +31,7 @@ void SmokeyIX::RobotInit()
 	// a_Compressor.SetClosedLoopControl(true);
 	a_LeftSol.Set(DoubleSolenoid::kForward);
 	a_Tank.Init();
-	// duinoPort.Write("a",8);
+	a_DuinoPort.Write("A",8);
 }
 
 void SmokeyIX::AutonomousInit()

@@ -2,9 +2,9 @@
 #include "LiveWindow/LiveWindow.h"
 
 
-ShifterController::ShifterController(CanTalonSRX &Left, CanTalonSRX &Right, DoubleSolenoid &Shift, int LeftPort, int RightPort)
-: LeftC(Left),
-  RightC(Right),
+ShifterController::ShifterController(uint32_t LeftMotor, uint32_t RightMotor, DoubleSolenoid &Shift, int LeftPort, int RightPort)
+: LeftC(LeftMotor),
+  RightC(RightMotor),
   Sol(Shift),
   EncoderC(LeftPort, RightPort),
   m_speed(0)

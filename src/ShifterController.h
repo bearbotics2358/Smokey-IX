@@ -9,7 +9,7 @@
 class ShifterController
 {
 public:
-	ShifterController(CanTalonSRX &Left, CanTalonSRX &Right, DoubleSolenoid &Shift, int LeftPort, int RightPort);
+	ShifterController(uint32_t LeftMotor, uint32_t RightMotor, DoubleSolenoid &Shift, int LeftPort, int RightPort);
 	~ShifterController();
 	void Set(float value, uint8_t syncGroup = 0);
 	void ShiftToggle();
@@ -26,8 +26,8 @@ public:
 	void PIDWrite(float output);
 
 private:
-	CanTalonSRX &LeftC;
-	CanTalonSRX &RightC;
+	CanTalonSRX LeftC;
+	CanTalonSRX RightC;
 	DoubleSolenoid &Sol;
 
 	Encoder EncoderC;

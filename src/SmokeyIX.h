@@ -56,11 +56,6 @@ private:
 
 	Compressor a_Compressor;
 
-	CanTalonSRX a_BLOne;
-	CanTalonSRX a_BLTwo;
-	CanTalonSRX a_BROne;
-	CanTalonSRX a_BRTwo;
-
 	Lifter a_Winch;
 
 	PivotArm a_Finger;
@@ -80,6 +75,8 @@ private:
 	Tank a_Tank;
 
 	AutoState a_AutoState;
+
+	SerialPort a_DuinoPort;
 
 };
 
