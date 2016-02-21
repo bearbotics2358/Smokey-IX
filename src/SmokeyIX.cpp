@@ -168,10 +168,9 @@ void SmokeyIX::TeleopPeriodic()
 	a_Gyro.Update();
 
 	if(a_Joystick.GetRawButton(1)) {
-		a_Shooter.Set(a_Joystick.GetRawButton(1));
-	} else {
-		a_Shooter.Set(0);
+		a_Shooter.Fire();
 	}
+	a_Shooter.Update(a_Joystick);
 
 	/*
 	if(a_Joystick.GetRawButton(2)) {
@@ -205,6 +204,7 @@ void SmokeyIX::TeleopPeriodic()
 	SmartDashboard::PutNumber("Gyro value", a_Gyro.GetAngle());
 	SmartDashboard::PutNumber("Shooter", a_Shooter.GetPosition());
 	SmartDashboard::PutNumber("Winch", a_Winch.GetLength());
+	printf("Shooter angle value: %6.2f\n", a_Shooter.GetPosition());
 	/* TODO: remove test code
 	 SmartDashboard::PutBoolean("LeftA", a_LeftA.Get());
 	 SmartDashboard::PutBoolean("RightB", a_RightB.Get());
@@ -247,7 +247,7 @@ void SmokeyIX::TestPeriodic()
 
 	//Roller Test
 	if(a_Joystick.GetRawButton(9)) {
-		a_Roller.Update(-1.0 );
+		a_Roller.Update(1.0 );
 	} else {
 		a_Roller.Update(0);
 	}

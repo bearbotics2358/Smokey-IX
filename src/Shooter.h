@@ -16,12 +16,12 @@ public:
 
 	Shooter(int TalonPort, int AbsPort);
 	~Shooter();
-	void Update();
+	void Update(Joystick &a_Stick);
 	float GetPosition();
 	void SetPosition(float SetPoint);
 	void Cock();
 	void Fire();
-	void Set(int value);
+	void Set(float value);
 	void Disable();
 
 private:
