@@ -10,7 +10,7 @@ a_Joystick(JOYSTICK_PORT),
 a_Joystick2(JOYSTICKTWO_PORT),
 a_PDP(PDP_PORT),
 a_Compressor(PCM_PORT),
-a_Winch(WINCH, WINCH_PORT_A, WINCH_PORT_B),
+a_Winch(WINCH, WINCH_PORT_A, WINCH_PORT_B, WINCH_SWITCH_PORT),
 a_Finger(FINGER, FINGER_ENCODER_PORT, 0, 0), // Third argument is our upper limit on the encoder, fourth is our lower limit
 a_Collector(COLLECTOR, COLLECTOR_ENCODER_PORT, 0, 0), // See above
 a_Shooter(SHOOTER, SHOOTER_ENCODER_PORT),

@@ -29,6 +29,7 @@
 #define WINCH 14
 #define WINCH_PORT_A 5
 #define WINCH_PORT_B 6
+#define WINCH_SWITCH_PORT 7
 
 #define FINGER 17
 #define FINGER_ENCODER_PORT 0
