@@ -1,8 +1,8 @@
 #pragma once
 
-#include <WPILib.h>
 #include "Prefs.h"
 #include "ShifterController.h"
+#include <WPILib.h>
 
 class Tank {
 public:

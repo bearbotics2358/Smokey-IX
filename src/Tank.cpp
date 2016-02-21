@@ -1,8 +1,6 @@
-#include <Prefs.h>
-#include <Tank.h>
-#include <math.h>
-#include <Joystick.h>
+#include "Tank.h"
 #include <iostream>
+#include <math.h>
 
 const std::string Tank::CONTROL_TYPE_KEY = "Drive Control Scheme";
 

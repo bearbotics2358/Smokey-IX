@@ -1,7 +1,7 @@
-#include "WPILib.h"
 #include "SmokeyIX.h"
 #include "Prefs.h"
-#include "PowerDistributionPanel.h"
+
+#include <WPILib.h>
 #include <math.h>
 #include <stdio.h>
 

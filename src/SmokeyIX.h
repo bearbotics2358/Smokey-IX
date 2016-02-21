@@ -8,7 +8,6 @@
 #include "ShifterController.h"
 #include "Tank.h"
 #include "JrimmyGyro.h"
-#include "I2C.h"
 #include "PivotArm.h"
 #include "Roller.h"
 #include "Lifter.h"
