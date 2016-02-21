@@ -7,9 +7,7 @@
 
 #include "ShifterController.h"
 #include "Tank.h"
-#include "CanTalonSRX.h"
 #include "JrimmyGyro.h"
-#include "I2C.h"
 #include "PivotArm.h"
 #include "Roller.h"
 #include "Lifter.h"
@@ -39,6 +37,7 @@ class SmokeyIX : public IterativeRobot {
 public:
 	SmokeyIX(void);
 	void RobotInit(void);
+	void DisabledInit(void);
 	void TeleopInit(void);
 	void TeleopPeriodic(void);
 	void TestInit(void);
@@ -76,6 +75,7 @@ private:
 
 	AutoState a_AutoState;
 
+	TargetDetector a_TargetDetector;
 };
 
 #endif /* SRC_SMOKEYIX_H_ */

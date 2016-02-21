@@ -7,16 +7,15 @@
 
 #include "Shooter.h"
 #include <math.h>
-#include "SmokeyIX.h"
 
 bool cockIt = true;
 bool fireIt = false;
 int cockValue = 2600;
 int oldValue = 0;
 
-Shooter::Shooter(int TalonPort, int AbsPort)
-:   ShooterC(TalonPort),
-	EncoderC(AbsPort)
+Shooter::Shooter(int TalonPort, int AbsPort):
+		ShooterC(TalonPort),
+		EncoderC(AbsPort)
 {
 	oldValue = EncoderC.GetValue();
 }

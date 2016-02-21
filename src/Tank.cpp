@@ -1,8 +1,6 @@
-#include <Prefs.h>
-#include <Tank.h>
-#include <math.h>
-#include <Joystick.h>
+#include "Tank.h"
 #include <iostream>
+#include <math.h>
 
 const std::string Tank::CONTROL_TYPE_KEY = "Drive Control Scheme";
 
@@ -35,19 +33,31 @@ Tank::~Tank()
 void Tank::Init()
 {
 	a_ControlTypeChooser.AddDefault(CONTROL_TYPE_TANK_TWO_JOYSTICKS_KEY,
-			               (void *)&CONTROL_TYPE_TANK_TWO_JOYSTICKS);
+									(void *)&CONTROL_TYPE_TANK_TWO_JOYSTICKS);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_TANK_GAMEPAD_KEY,
-			              (void *)&CONTROL_TYPE_TANK_GAMEPAD);
+									(void *)&CONTROL_TYPE_TANK_GAMEPAD);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_ARCADE_ONE_JOYSTICK_KEY,
-			              (void *)&CONTROL_TYPE_ARCADE_ONE_JOYSTICK);
+									(void *)&CONTROL_TYPE_ARCADE_ONE_JOYSTICK);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK_KEY,
-			              (void *)&CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK);
+									(void *)&CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS_KEY,
-			              (void *)&CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS);
+									(void *)&CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS);
 	SmartDashboard::PutData(CONTROL_TYPE_KEY, &a_ControlTypeChooser);
 
 	SmartDashboard::PutNumber(ARCADE_TUNING_PARAM_A_KEY, ARCADE_TUNING_PARAM_A_DEFAULT);
 	SmartDashboard::PutNumber(ARCADE_TUNING_PARAM_B_KEY, ARCADE_TUNING_PARAM_B_DEFAULT);
+}
+
+void Tank::Enable()
+{
+	a_LeftSide.Enable();
+	a_RightSide.Enable();
+}
+
+void Tank::Disable()
+{
+	a_LeftSide.Disable();
+	a_RightSide.Disable();
 }
 
 /*
@@ -206,7 +216,7 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 		break;
 	case CONTROL_TYPE_TANK_GAMEPAD:
 		left = stick2.GetRawAxis(1);
-		right = stick2.GetRawAxis(5);
+		right = -1.0 * stick2.GetRawAxis(4);
 		break;
 	case CONTROL_TYPE_ARCADE_ONE_JOYSTICK:
 		EtherArcade(stick.GetY(), stick.GetX() * -1.0, a, b, left, right);
@@ -221,6 +231,24 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 		right *= -1.0;
 		break;
 	}
+
+	if (fabs(left) < kJoystickDeadzone)
+	{
+		left = 0.0;
+	}
+	if (fabs(right) < kJoystickDeadzone)
+	{
+		right = 0.0;
+	}
+
+	SmartDashboard::PutNumber("Left Encoder Distance", a_LeftSide.GetDistance());
+	SmartDashboard::PutNumber("Right Encoder Distance", a_RightSide.GetDistance());
+
+	SmartDashboard::PutNumber("Left Encoder Rate", a_LeftSide.GetRate());
+	SmartDashboard::PutNumber("Right Encoder Rate", a_RightSide.GetRate());
+
+	SmartDashboard::PutNumber("Left Tank Input", left);
+	SmartDashboard::PutNumber("Right Tank Input", right);
 
 	a_LeftSide.Set(left);
 	a_RightSide.Set(right);

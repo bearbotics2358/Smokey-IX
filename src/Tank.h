@@ -1,8 +1,8 @@
 #pragma once
 
-#include <WPILib.h>
 #include "Prefs.h"
 #include "ShifterController.h"
+#include <WPILib.h>
 
 class Tank {
 public:
@@ -10,6 +10,10 @@ public:
 	~Tank();
 
 	void Init();
+
+	void Enable();
+	void Disable();
+
 	void Update(Joystick &stick, Joystick &stick2);
 	void AutonUpdate(double left, double right);
 	float GetDistance();
@@ -32,6 +36,8 @@ private:
 	static const double      ARCADE_TUNING_PARAM_A_DEFAULT;
 	static const std::string ARCADE_TUNING_PARAM_B_KEY;
 	static const double      ARCADE_TUNING_PARAM_B_DEFAULT;
+
+	const double kJoystickDeadzone = 0.08;
 
 	ShifterController &a_LeftSide;
 	ShifterController &a_RightSide;
