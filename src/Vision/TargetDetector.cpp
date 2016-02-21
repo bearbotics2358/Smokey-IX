@@ -7,7 +7,7 @@ typedef unique_ptr<Image, decltype(&imaqDispose)> UniqueImgPtr;
 typedef unique_ptr<ShapeReport, decltype(&imaqDispose)> ShapeReportPtr;
 
 TargetDetector::TargetDetector(string ip):
-		a_DebugMode(false), a_Processing(false),
+		a_DebugMode(true), a_Processing(false),
 		a_ImageCaptureTask(&TargetDetector::ImageCaptureTask, this),
 		a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
 		a_Camera(ip) {
@@ -115,6 +115,9 @@ void TargetDetector::ImageProcessingTask() {
 	UniqueImgPtr curImage(imaqCreateImage(IMAQ_IMAGE_HSL, 0), imaqDispose);
 	UniqueImgPtr curMonoImage(imaqCreateImage(IMAQ_IMAGE_U8, 7), imaqDispose);
 
+	// Used to display match results
+	UniqueImgPtr debugImage(imaqCreateImage(IMAQ_IMAGE_U8, 7), imaqDispose);
+
 	// Used for benchmarking
 	uint64_t start, end;
 
@@ -149,6 +152,12 @@ void TargetDetector::ImageProcessingTask() {
 					imaqExtractColorPlanes(curImage.get(), IMAQ_HSL, nullptr, nullptr, curMonoImage.get()),
 					"imaqExtractColorPlanes");
 			SaveImage("01-extract-luminance", curMonoImage.get());
+
+			if (a_DebugMode) {
+				CheckIMAQError(
+						imaqDuplicate(debugImage.get(), curMonoImage.get()),
+						"imaqDuplicate");
+			}
 
 			// Auto thresholding (find bright objects)
 			ThresholdData *threshData = imaqAutoThreshold2(
@@ -196,8 +205,13 @@ void TargetDetector::ImageProcessingTask() {
 								<< "- score: " << shape.score << endl
 								<< "- center: (" << shape.centroid.x << ", " << shape.centroid.y << ")" << endl
 								<< "- size: " << shape.size << endl;
+
+						// Draw rectangle on debug image
+						imaqDrawShapeOnImage(debugImage.get(), debugImage.get(), shape.coordinates,
+								IMAQ_DRAW_VALUE, IMAQ_SHAPE_RECT, 255.0);
 					}
 				}
+				SaveImage("debug-output", debugImage.get());
 			}
 		} catch (runtime_error &ex) {
 			cout << ex.what() << endl;
