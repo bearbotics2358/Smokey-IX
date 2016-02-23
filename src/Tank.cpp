@@ -259,6 +259,11 @@ void Tank::AutonUpdate(double left, double right) {
     a_RightSide.Set(right);
 }
 
+void Tank::SimpleUpdate(Joystick &stick, Joystick &stick2) {
+	a_LeftSide.Set(stick2.GetY());
+	a_RightSide.Set( -1.0 * stick.GetY());
+}
+
 float Tank::GetDistance()
 {
 	return (a_LeftSide.GetDistance() + a_RightSide.GetDistance()) / 2.0 ;

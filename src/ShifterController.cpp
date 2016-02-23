@@ -17,7 +17,7 @@ ShifterController::ShifterController(uint32_t leftMotor, uint32_t rightMotor,
 void ShifterController::Enable()
 {
 	_enabled = true;
-	EnablePIDControl();
+	// EnablePIDControl();
 }
 
 void ShifterController::Disable()

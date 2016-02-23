@@ -75,7 +75,7 @@ private:
 
 	AutoState a_AutoState;
 
-	TargetDetector a_TargetDetector;
+	// TargetDetector a_TargetDetector;
 };
 
 #endif /* SRC_SMOKEYIX_H_ */

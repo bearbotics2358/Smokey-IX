@@ -16,6 +16,7 @@ public:
 
 	void Update(Joystick &stick, Joystick &stick2);
 	void AutonUpdate(double left, double right);
+	void SimpleUpdate(Joystick &stick, Joystick &stick2);
 	float GetDistance();
 
 private:
