@@ -23,6 +23,8 @@ enum AutoState {
 	kMoveToShoot,
 	kTurnToShoot,
 	kMoveTowardsTower,
+	kLoadingBot,
+	kLoaderDown,
 	kCheckAim,
 	kAdjust,
 	kShoot,
@@ -61,6 +63,8 @@ private:
 
 	PivotArm a_Collector;
 
+	DigitalInput a_CollectorSwitch;
+
 	Shooter a_Shooter;
 
 	Roller a_Roller;
@@ -74,6 +78,8 @@ private:
 	Tank a_Tank;
 
 	AutoState a_AutoState;
+
+
 
 	// TargetDetector a_TargetDetector;
 };

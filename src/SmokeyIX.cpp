@@ -13,6 +13,7 @@ SmokeyIX::SmokeyIX(void):
 		a_Winch(WINCH, WINCH_PORT_A, WINCH_PORT_B, WINCH_SWITCH_PORT),
 		a_Finger(FINGER, FINGER_ENCODER_PORT, 0, 0), // Third argument is our upper limit on the encoder, fourth is our lower limit
 		a_Collector(COLLECTOR, COLLECTOR_ENCODER_PORT, 0, 0), // See above
+		a_CollectorSwitch(COLLECTOR_SWITCH_PORT),
 		a_Shooter(SHOOTER, SHOOTER_ENCODER_PORT),
 		a_Roller(ROLLER, ROLLER_SWITCH_PORT),
 		a_LeftSol(PCM_PORT, LEFT_SOL_PORT_ONE,LEFT_SOL_PORT_TWO),   // Must specify port # if not 0
@@ -57,6 +58,7 @@ void SmokeyIX::AutonomousPeriodic()
 	const double turnSpotDistance = 0.0; //113.06" - ROBOT_PIVOT_POINT
 	const double shootSpotDistance = 0.0;
 	const double turnAngle = 60.0;
+	const double loadHighAngle = 0.0; // max angle of loader arm
 	const double turnAroundAngle = (180 * M_1_PI) * asin(48.0/(sqrt(pow(shootSpotDistance,2) - 96*sqrt(3)*shootSpotDistance + 9216)));
 	const double turnToCAngle = 180.0 - turnAngle - turnAroundAngle; // check all these angles when testing // 30 if past batter
 	const double cDistance = (sqrt(pow(shootSpotDistance,2) - 96*sqrt(3)*shootSpotDistance + 9216));
@@ -97,12 +99,28 @@ void SmokeyIX::AutonomousPeriodic()
 		break;
 	case kMoveTowardsTower:
 		if (tankDistance < shootSpotDistance) {
-					a_Tank.AutonUpdate(0.5, 0.5);
-				} else {
-					a_Tank.AutonUpdate(0, 0);
-					nextState = kCheckAim;
-				}
-				break;
+			a_Tank.AutonUpdate(0.5, 0.5);
+		} else {
+			a_Tank.AutonUpdate(0, 0);
+			nextState = kLoadingBot;
+		}
+		break;
+	case kLoadingBot:
+		if (!a_CollectorSwitch.Get()) {
+			a_Collector.Set(0.5);
+		} else {
+			a_Collector.Set(0.0);
+			nextState = kLoaderDown;
+		}
+		break;
+	case kLoaderDown:
+		if (!a_CollectorSwitch.Get()) {
+			a_Collector.Set(-0.5);
+		} else {
+			a_Collector.Set(0.0);
+			nextState = kCheckAim;
+		}
+		break;
 	case kCheckAim:
 		// insert vision code here
 		break;
@@ -160,6 +178,7 @@ void SmokeyIX::TeleopInit()
 	a_Tank.Enable(); // Don't add mysterious methods in that we haven't tested, alexander
 	a_Left.DisablePIDControl();
 	a_Right.DisablePIDControl();
+	a_Collector.Init();
 	// a_TargetDetector.StartProcessing();
 }
 
@@ -168,6 +187,7 @@ void SmokeyIX::TeleopPeriodic()
 
 	a_Tank.Update(a_Joystick, a_Joystick2);
 	a_Gyro.Update();
+
 
 	if(a_Joystick.GetRawButton(1)) {
 		a_Shooter.Fire();
@@ -183,6 +203,7 @@ void SmokeyIX::TeleopPeriodic()
 	*/
 
 	a_Collector.Update(a_Joystick, 5, 3, 0.5);
+
 
 	if (a_Joystick.GetRawButton(4)) {
 		a_Winch.Update(a_Joystick.GetRawButton(4));
@@ -202,7 +223,7 @@ void SmokeyIX::TeleopPeriodic()
 		a_Roller.Update(0);
 	}
 
-
+	SmartDashboard::PutNumber("Collector Angle", a_Collector.GetAngle());
 	SmartDashboard::PutNumber("Gyro value", a_Gyro.GetAngle());
 	SmartDashboard::PutNumber("Shooter", a_Shooter.GetPosition());
 	SmartDashboard::PutNumber("Winch", a_Winch.GetLength());

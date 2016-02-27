@@ -25,31 +25,30 @@ PivotArm::~PivotArm()
 
 void PivotArm::Init()
 {
-	ArmC.SetModeSelect(CanTalonSRX::kMode_PositionCloseLoop); // Change control mode of talon, default is PercentVbus
-	ArmC.SetFeedbackDeviceSelect(CANTalon::AnalogEncoder); // Set the feedback device that is hooked up to the talon
-	ArmC.SetPgain(0, 0.1); // 1st is slotIdx, I think it means profile #, second is gain
+	ArmC.SetControlMode(CANTalon::kPosition); // Change control mode of talon, default is PercentVbus
+	ArmC.SetFeedbackDevice(CANTalon::AnalogEncoder); // Set the feedback device that is hooked up to the talon
+	ArmC.Set(258);
+	ArmC.SetP(10);
 }
 
 void PivotArm::Set(float value, uint8_t syncGroup)
 {
-	ArmC.Set(value);
+	ArmC.SetSetpoint(value);
 }
 
 void PivotArm::Update(Joystick &stick, int port1, int port2, float value)
 {
 	if(stick.GetRawButton(port1)) {
-		ArmC.Set(value);
+		ArmC.SetSetpoint(258);
 	} else if(stick.GetRawButton(port2)) {
-		ArmC.Set(-1.0 * value);
-	} else {
-		ArmC.Set(0);
+		ArmC.SetSetpoint(530);
 	}
 
 }
 
 float PivotArm::GetAngle()
 {
-	return EncoderC.GetValue();
+	return ArmC.GetPosition();
 }
 
 void PivotArm::Disable()

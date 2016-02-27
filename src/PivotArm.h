@@ -28,7 +28,7 @@ private:
 	int upperLimit;
 	int lowerLimit;
 
-	CanTalonSRX ArmC;
+	CANTalon ArmC;
 
 	AnalogInput EncoderC;
 
