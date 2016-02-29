@@ -29,9 +29,9 @@ enum AutoState {
 	kAdjust,
 	kShoot,
 	kTurnBack,
-	kDriveToC,
+	kDriveToTurnPoint,
 	kTurnToC,
-	kDriveThroughC,
+	kDriveToC,
 	kAutoIdle
 };
 

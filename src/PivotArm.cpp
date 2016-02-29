@@ -27,7 +27,7 @@ void PivotArm::Init()
 {
 	ArmC.SetControlMode(CANTalon::kPosition); // Change control mode of talon, default is PercentVbus
 	ArmC.SetFeedbackDevice(CANTalon::AnalogEncoder); // Set the feedback device that is hooked up to the talon
-	ArmC.Set(258);
+	SetAngle(26);
 	ArmC.SetP(10);
 }
 
@@ -36,14 +36,24 @@ void PivotArm::Set(float value, uint8_t syncGroup)
 	ArmC.SetSetpoint(value);
 }
 
-void PivotArm::Update(Joystick &stick, int port1, int port2, float value)
+void PivotArm::SetAngle(float angleToSet)
+{
+	ArmC.SetSetpoint( ( angleToSet * (1024.0 / 360.0) ) + 258.0 );
+}
+
+void PivotArm::Update(Joystick &stick, int port1, int port2, int port3, int port4, int port5, float value)
 {
 	if(stick.GetRawButton(port1)) {
-		ArmC.SetSetpoint(258);
+		SetAngle(26);
 	} else if(stick.GetRawButton(port2)) {
-		ArmC.SetSetpoint(530);
+		SetAngle(90);
+	} else if(stick.GetRawButton(port3)) {
+		SetAngle(45);
+	} else if(stick.GetRawButton(port4)) {
+		SetAngle(115);
+	} else if(stick.GetRawButton(port5)) {
+		SetAngle(0);
 	}
-
 }
 
 float PivotArm::GetAngle()

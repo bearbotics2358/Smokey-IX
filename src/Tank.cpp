@@ -14,6 +14,8 @@ const int         Tank::CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK      = 3;
 const std::string Tank::CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK_KEY  = "Arcade Drive (one gamepad stick)";
 const int         Tank::CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS     = 4;
 const std::string Tank::CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS_KEY = "Arcade Drive (two gamepad sticks)";
+const int		 Tank::CONTROL_TYPE_TWIST = 5;
+const std::string Tank::CONTROL_TYPE_TWIST_KEY = "Come on now, let's do the twist";
 
 const std::string Tank::ARCADE_TUNING_PARAM_A_KEY     = "Arcade Drive Tuning Parameter (A)";
 const double      Tank::ARCADE_TUNING_PARAM_A_DEFAULT = 0.0;
@@ -42,6 +44,8 @@ void Tank::Init()
 									(void *)&CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS_KEY,
 									(void *)&CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS);
+	a_ControlTypeChooser.AddObject(CONTROL_TYPE_TWIST_KEY,
+									(void *)&CONTROL_TYPE_TWIST);
 	SmartDashboard::PutData(CONTROL_TYPE_KEY, &a_ControlTypeChooser);
 
 	SmartDashboard::PutNumber(ARCADE_TUNING_PARAM_A_KEY, ARCADE_TUNING_PARAM_A_DEFAULT);
@@ -134,7 +138,7 @@ void EtherArcade(double fwd, double rcw, double a, double b, double &out_left, d
 	}
 }
 
-void Tank::Update(Joystick &stick, Joystick &stick2) {
+void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue, float setAngle) {
 
 	if(stick.GetRawButton(11))
 	{
@@ -230,6 +234,17 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 		EtherArcade(stick2.GetRawAxis(1), stick2.GetRawAxis(4) * -1.0, a, b, left, right);
 		right *= -1.0;
 		break;
+	case CONTROL_TYPE_TWIST:
+		if(gyroValue < setAngle) {
+			left = 1.0;
+			right = -1.0;
+		} else {
+			left = -1.0;
+			right = 1.0;
+		}
+		break;
+	// case TURN_TO_HIGH_GOAL:
+
 	}
 
 	if (fabs(left) < kJoystickDeadzone)

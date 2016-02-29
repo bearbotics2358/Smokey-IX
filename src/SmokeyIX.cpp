@@ -51,22 +51,23 @@ void SmokeyIX::AutonomousPeriodic()
 {
 	AutoState nextState = a_AutoState;
 
-	int tankDistance = 0;
+	const double CONVERSION_FACTOR = 3.5/1000;
+	int tankDistance = 0; //  encoder value * CONVERSION_FACTOR
 
-	const double lowBarDistance = 0.0; //77.0" - ROBOT_LENGTH
-	const double lowBarClear = 0.0; //48.0" + ROBOT_LENGTH
-	const double turnSpotDistance = 0.0; //113.06" - ROBOT_PIVOT_POINT
-	const double shootSpotDistance = 0.0;
-	const double turnAngle = 60.0;
-	const double loadHighAngle = 0.0; // max angle of loader arm
-	const double turnAroundAngle = (180 * M_1_PI) * asin(48.0/(sqrt(pow(shootSpotDistance,2) - 96*sqrt(3)*shootSpotDistance + 9216)));
-	const double turnToCAngle = 180.0 - turnAngle - turnAroundAngle; // check all these angles when testing // 30 if past batter
-	const double cDistance = (sqrt(pow(shootSpotDistance,2) - 96*sqrt(3)*shootSpotDistance + 9216));
-	const double throughCDistance = 0.0; //dependent on shootSpotDistance
+	const double LOW_BAR_DISTANCE = 0.0; // 77.0" - ROBOT_LENGTH
+	const double LOW_BAR_CLEAR = 0.0; // 48.0" + ROBOT_LENGTH
+	const double TURN_SPOT_DISTANCE = 0.0; // 113.06" - ROBOT_PIVOT_POINT
+	const double SHOOT_SPOT_DISTANCE = 0.0; // 130.9 - TOWER_DISTANCE
+	const double TURN_ANGLE = 60.0;
+	const double LOAD_HIGH_ANGLE = 0.0; // max angle of loader arm
+	const double TURN_AROUND_ANGLE = (180 * M_1_PI) * asin(48.0/(sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216)));
+	const double C_DISTANCE = (sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216));
+	const double TURN_TO_C_ANGLE = 180.0; // check all these angles when testing
+	const double TO_C_DISTANCE = TURN_SPOT_DISTANCE + ROBOT_PIVOT_POINT;
 
 	switch (a_AutoState) {
 	case kMoveToLowBar:
-		if (tankDistance < lowBarDistance) {
+		if (tankDistance < LOW_BAR_DISTANCE) {
 			a_Tank.AutonUpdate(0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
@@ -74,7 +75,7 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kMoveUnderLowBar:
-		if (tankDistance < lowBarClear) {
+		if (tankDistance < LOW_BAR_CLEAR) {
 			a_Tank.AutonUpdate(0.5, 0.5); //change to a usable speed
 		} else {
 			a_Tank.AutonUpdate(0, 0);
@@ -82,7 +83,7 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kMoveToShoot:
-		if (tankDistance < turnSpotDistance) {
+		if (tankDistance < TURN_SPOT_DISTANCE) {
 			a_Tank.AutonUpdate(0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
@@ -90,7 +91,7 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kTurnToShoot:
-		if (a_Gyro.GetAngle() < turnAngle) {
+		if (a_Gyro.GetAngle() < TURN_ANGLE) {
 			a_Tank.AutonUpdate(0.5, -0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
@@ -98,7 +99,7 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kMoveTowardsTower:
-		if (tankDistance < shootSpotDistance) {
+		if (tankDistance < SHOOT_SPOT_DISTANCE) {
 			a_Tank.AutonUpdate(0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
@@ -132,15 +133,15 @@ void SmokeyIX::AutonomousPeriodic()
 		nextState = kTurnBack;
 		break;
 	case kTurnBack:
-		if (a_Gyro.GetAngle() < turnAroundAngle) {
+		if (a_Gyro.GetAngle() < TURN_AROUND_ANGLE) {
 			a_Tank.AutonUpdate(0.5, -0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
-			nextState = kDriveToC;
+			nextState = kDriveToTurnPoint;
 		}
 		break;
-	case kDriveToC:
-		if (tankDistance < cDistance) {
+	case kDriveToTurnPoint:
+		if (tankDistance < C_DISTANCE) {
 			a_Tank.AutonUpdate(0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
@@ -148,15 +149,15 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kTurnToC:
-			if (a_Gyro.GetAngle() < turnToCAngle) {
+			if (a_Gyro.GetAngle() < TURN_TO_C_ANGLE) {
 				a_Tank.AutonUpdate(0.5, -0.5);
 			} else {
 				a_Tank.AutonUpdate(0, 0);
-				nextState = kDriveThroughC;
+				nextState = kDriveToC;
 			}
 			break;
-	case kDriveThroughC:
-			if (tankDistance < throughCDistance) {
+	case kDriveToC:
+			if (tankDistance < TO_C_DISTANCE) {
 				a_Tank.AutonUpdate(0.5, 0.5);
 			} else {
 				a_Tank.AutonUpdate(0, 0);
@@ -184,9 +185,10 @@ void SmokeyIX::TeleopInit()
 
 void SmokeyIX::TeleopPeriodic()
 {
-
-	a_Tank.Update(a_Joystick, a_Joystick2);
+	float setAngle = SmartDashboard::GetNumber("Angle to set to", 0);
 	a_Gyro.Update();
+	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle(), setAngle);
+
 
 
 	if(a_Joystick.GetRawButton(1)) {
@@ -202,7 +204,7 @@ void SmokeyIX::TeleopPeriodic()
 	a_Shooter.Update();
 	*/
 
-	a_Collector.Update(a_Joystick, 5, 3, 0.5);
+	a_Collector.Update(a_Joystick, 3, 5, 4, 6, 2, 0.5);
 
 
 	if (a_Joystick.GetRawButton(4)) {
@@ -217,10 +219,16 @@ void SmokeyIX::TeleopPeriodic()
 	// a_Finger.Update(a_Joystick, 7, 8, 0.5);
 
 	//Roller Test
-	if(a_Joystick2.GetRawButton(1)) {
-		a_Roller.Update(1.0 );
+	if(a_Joystick2.GetRawButton(2)) {
+		a_Roller.Update(0.5 );
+	} else if(a_Joystick2.GetRawButton(1)) {
+		a_Roller.Update(-0.5);
 	} else {
 		a_Roller.Update(0);
+	}
+
+	if(a_Joystick.GetRawButton(2)) {
+		a_Gyro.Zero();
 	}
 
 	SmartDashboard::PutNumber("Collector Angle", a_Collector.GetAngle());
@@ -246,7 +254,7 @@ void SmokeyIX::TestInit()
 
 void SmokeyIX::TestPeriodic()
 {
-	a_Tank.Update(a_Joystick, a_Joystick2);
+	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle(), 0);
 
 	if(a_Joystick.GetRawButton(1)) {
 		a_Shooter.Set(a_Joystick.GetRawButton(1));
@@ -255,7 +263,7 @@ void SmokeyIX::TestPeriodic()
 	}
 
 
-	a_Collector.Update(a_Joystick, 3, 5, 0.5);
+	// a_Collector.Update(a_Joystick, 3, 5, 0.5);
 
 	if (a_Joystick.GetRawButton(4)) {
 		a_Winch.Update(a_Joystick.GetRawButton(4));
