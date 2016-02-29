@@ -150,13 +150,13 @@ void JrimmyGyro::Update()
 	angle[2] += ((ZAxis - angleBias[2]) * timeDelta);
 	lastUpdate = time;
 
-	for(int i = 0; i < 3; i++) {
+	/* for(int i = 0; i < 3; i++) {
 		if (angle[i] > 360) {
 			angle[i] -= 360;
 		}	else if (angle[i] < 0) {
 			angle[i] += 360;
 		}
-	}
+	 } */
 }
 
 double JrimmyGyro::GetX()

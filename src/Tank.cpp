@@ -235,12 +235,15 @@ void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue, float setA
 		right *= -1.0;
 		break;
 	case CONTROL_TYPE_TWIST:
-		if(gyroValue < setAngle) {
-			left = 1.0;
-			right = -1.0;
+		if(gyroValue < setAngle - 3) {
+			left = -0.2;
+			right = -0.2;
+		} else if(gyroValue > setAngle + 3) {
+			left = 0.2;
+			right = 0.2;
 		} else {
-			left = -1.0;
-			right = 1.0;
+			left = 0;
+			right = 0;
 		}
 		break;
 	// case TURN_TO_HIGH_GOAL:

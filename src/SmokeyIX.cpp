@@ -185,11 +185,9 @@ void SmokeyIX::TeleopInit()
 
 void SmokeyIX::TeleopPeriodic()
 {
-	float setAngle = SmartDashboard::GetNumber("Angle to set to", 0);
+	float setAngle = SmartDashboard::GetNumber("Angle to set to", 30);
 	a_Gyro.Update();
-	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle(), setAngle);
-
-
+	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle(), 30);
 
 	if(a_Joystick.GetRawButton(1)) {
 		a_Shooter.Fire();
@@ -220,14 +218,14 @@ void SmokeyIX::TeleopPeriodic()
 
 	//Roller Test
 	if(a_Joystick2.GetRawButton(2)) {
-		a_Roller.Update(0.5 );
+		a_Roller.Update(0.25);
 	} else if(a_Joystick2.GetRawButton(1)) {
 		a_Roller.Update(-0.5);
 	} else {
 		a_Roller.Update(0);
 	}
 
-	if(a_Joystick.GetRawButton(2)) {
+	if(a_Joystick2.GetRawButton(3)) {
 		a_Gyro.Zero();
 	}
 

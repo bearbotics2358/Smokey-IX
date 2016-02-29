@@ -11,7 +11,7 @@
 
 bool cockIt = true;
 bool fireIt = false;
-int cockValue = 3500;
+int cockValue = 3200;
 int oldValue = 0;
 
 Shooter::Shooter(int TalonPort, int AbsPort):
