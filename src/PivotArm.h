@@ -19,7 +19,7 @@ public:
 	void Init();
 	void Set(float value, uint8_t syncGroup = 0);
 	void SetAngle(float angleToSet);
-	void Update(Joystick &stick, int port1, int port2, int port3, int port4, int port5, float value);
+	void Update(Joystick &stick, int port1, int port2, int port3, int port4, int port5);
 	float GetAngle();
 	void Disable();
 

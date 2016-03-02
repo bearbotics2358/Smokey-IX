@@ -87,17 +87,17 @@ void JrimmyGyro::Cal()
 		angleBias[1] += YAxis;
 		angleBias[2] += ZAxis;
 
-		// printf("XAxis: %6.2lf  ", XAxis);
-		// printf("YAxis: %6.2lf  ", YAxis);
-		// printf("ZAxis: %6.2lf\n", ZAxis);
+		printf("XAxis: %6.2lf  ", XAxis);
+		printf("YAxis: %6.2lf  ", YAxis);
+		printf("ZAxis: %6.2lf\n", ZAxis);
 	}
 
 	for(i = 0; i < 3; i++) {
 		angleBias[i] /= 10;
 		angle[i] = 0;
 	}
-	// printf("Bias read time %6.3lf\n", GetTime() - tstart);
-	// printf("AngleBias: %6.3lf %6.3lf %6.3lf\n", angleBias[0], angleBias[1], angleBias[2]);
+	printf("Bias read time %6.3lf\n", GetTime() - tstart);
+	printf("AngleBias: %6.3lf %6.3lf %6.3lf\n", angleBias[0], angleBias[1], angleBias[2]);
 	// SmartDashboard::PutNumber("Angle Bias X", angleBias[0]);
 	// SmartDashboard::PutNumber("Angle Bias Y", angleBias[1]);
 	// SmartDashboard::PutNumber("Angle Bias Z", angleBias[2]);

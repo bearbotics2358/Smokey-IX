@@ -14,9 +14,12 @@ public:
 	void Enable();
 	void Disable();
 
-	void Update(Joystick &stick, Joystick &stick2, float gyroValue, float setAngle);
+	void Update(Joystick &stick, Joystick &stick2, float gyroValue);
 	void AutonUpdate(double left, double right);
 	void SimpleUpdate(Joystick &stick, Joystick &stick2);
+	void SetTwistingMode();
+	void SetTwistingAngle(float angle);
+	void SetTwistingRelAngle(float gyroAngle, float angle);
 	float GetDistance();
 
 private:

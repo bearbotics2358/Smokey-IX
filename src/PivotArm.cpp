@@ -29,6 +29,7 @@ void PivotArm::Init()
 	ArmC.SetFeedbackDevice(CANTalon::AnalogEncoder); // Set the feedback device that is hooked up to the talon
 	SetAngle(26);
 	ArmC.SetP(10);
+	ArmC.SetI(0.0001);
 }
 
 void PivotArm::Set(float value, uint8_t syncGroup)
@@ -41,7 +42,7 @@ void PivotArm::SetAngle(float angleToSet)
 	ArmC.SetSetpoint( ( angleToSet * (1024.0 / 360.0) ) + 258.0 );
 }
 
-void PivotArm::Update(Joystick &stick, int port1, int port2, int port3, int port4, int port5, float value)
+void PivotArm::Update(Joystick &stick, int port1, int port2, int port3, int port4, int port5)
 {
 	if(stick.GetRawButton(port1)) {
 		SetAngle(26);

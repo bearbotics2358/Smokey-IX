@@ -16,6 +16,7 @@ public:
 	void Update(uint8_t syncGroup = 0);
 	void Set(float value1, float setPoint);
 	float GetLength();
+	void Set(float value);
 	void Disable();
 
 	void PIDWrite(float output);

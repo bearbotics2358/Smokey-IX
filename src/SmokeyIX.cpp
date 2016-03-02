@@ -185,12 +185,19 @@ void SmokeyIX::TeleopInit()
 
 void SmokeyIX::TeleopPeriodic()
 {
-	float setAngle = SmartDashboard::GetNumber("Angle to set to", 30);
 	a_Gyro.Update();
-	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle(), 30);
+	if(a_Joystick2.GetRawButton(6)) {
+		a_Tank.SetTwistingMode();
+		a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), 30);
+	}
+	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle());
+
 
 	if(a_Joystick.GetRawButton(1)) {
 		a_Shooter.Fire();
+	}
+	if(a_Joystick.GetRawButton(10)) {
+		a_Shooter.Stop();
 	}
 	a_Shooter.Update(a_Joystick);
 
@@ -202,15 +209,15 @@ void SmokeyIX::TeleopPeriodic()
 	a_Shooter.Update();
 	*/
 
-	a_Collector.Update(a_Joystick, 3, 5, 4, 6, 2, 0.5);
+	a_Collector.Update(a_Joystick, 3, 5, 4, 6, 2);
 
 
-	if (a_Joystick.GetRawButton(4)) {
-		a_Winch.Update(a_Joystick.GetRawButton(4));
-	} else if (a_Joystick.GetRawButton(6)) {
-		a_Winch.Update(-1.0 * a_Joystick.GetRawButton(6));
+	if (a_Joystick2.GetRawButton(4)) {
+		a_Winch.Set(a_Joystick2.GetRawButton(4));
+	} else if (a_Joystick2.GetRawButton(5)) {
+		a_Winch.Set(-1.0 * a_Joystick2.GetRawButton(5));
 	} else {
-		a_Winch.Update(0);
+		a_Winch.Set(0);
 	}
 
 
@@ -226,14 +233,14 @@ void SmokeyIX::TeleopPeriodic()
 	}
 
 	if(a_Joystick2.GetRawButton(3)) {
-		a_Gyro.Zero();
+		a_Gyro.Cal();
 	}
 
 	SmartDashboard::PutNumber("Collector Angle", a_Collector.GetAngle());
 	SmartDashboard::PutNumber("Gyro value", a_Gyro.GetAngle());
 	SmartDashboard::PutNumber("Shooter", a_Shooter.GetPosition());
 	SmartDashboard::PutNumber("Winch", a_Winch.GetLength());
-	printf("Shooter angle value: %6.2f\n", a_Shooter.GetPosition());
+	// printf("Shooter angle value: %6.2f\n", a_Shooter.GetPosition());
 	/* TODO: remove test code
 	 SmartDashboard::PutBoolean("LeftA", a_LeftA.Get());
 	 SmartDashboard::PutBoolean("RightB", a_RightB.Get());
@@ -252,7 +259,7 @@ void SmokeyIX::TestInit()
 
 void SmokeyIX::TestPeriodic()
 {
-	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle(), 0);
+	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle());
 
 	if(a_Joystick.GetRawButton(1)) {
 		a_Shooter.Set(a_Joystick.GetRawButton(1));

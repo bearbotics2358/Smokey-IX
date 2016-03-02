@@ -52,6 +52,11 @@ void Lifter::Update(uint8_t syncGroup)
 
 }
 
+void Lifter::Set(float value)
+{
+	LifterC.Set(value);
+}
+
 float Lifter::GetLength()
 {
 	return EncoderC.GetRaw();

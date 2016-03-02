@@ -12,6 +12,7 @@
 bool cockIt = true;
 bool fireIt = false;
 int cockValue = 3200;
+int uncockedValue = 1150;
 int oldValue = 0;
 
 Shooter::Shooter(int TalonPort, int AbsPort):
@@ -59,9 +60,10 @@ void Shooter::SetPosition(float SetPoint)
 
 }
 
-void Shooter::Cock()
+void Shooter::Stop()
 {
-	cockIt = true;
+	cockIt = false;
+	fireIt = false;
 }
 
 void Shooter::Fire()
