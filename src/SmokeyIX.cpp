@@ -24,7 +24,7 @@ SmokeyIX::SmokeyIX(void):
 		a_AutoState(kAutoIdle)
 		// a_TargetDetector("10.23.58.11")
 {
-
+	tState = 0;
 }
 
 void SmokeyIX::RobotInit()
@@ -45,127 +45,167 @@ void SmokeyIX::AutonomousInit()
 	a_Gyro.Cal();
 	a_AutoState = kMoveUnderLowBar;
 	a_Tank.Enable();
+	a_Collector.Init();
+	a_Left.ResetEncoder();
+	a_Right.ResetEncoder();
+	tState = 0;
 }
 
 void SmokeyIX::AutonomousPeriodic()
 {
 	AutoState nextState = a_AutoState;
 
-	const double CONVERSION_FACTOR = 3.5/1000;
-	int tankDistance = 0; //  encoder value * CONVERSION_FACTOR
+	const double CONVERSION_FACTOR = (3.2 * 3.14159265) / 1000;
+	float tankDistance = a_Tank.GetDistance() * CONVERSION_FACTOR;
+	SmartDashboard::PutNumber("Tank Distance", tankDistance);
 
-	const double LOW_BAR_DISTANCE = 0.0; // 77.0" - ROBOT_LENGTH
-	const double LOW_BAR_CLEAR = 0.0; // 48.0" + ROBOT_LENGTH
-	const double TURN_SPOT_DISTANCE = 0.0; // 113.06" - ROBOT_PIVOT_POINT
-	const double SHOOT_SPOT_DISTANCE = 0.0; // 130.9 - TOWER_DISTANCE
+	const double LOW_BAR_DISTANCE = 77.0 - ROBOT_LENGTH;
+	const double LOW_BAR_CLEAR = 48.0 + ROBOT_LENGTH;
+	const double TURN_SPOT_DISTANCE = 113.06 - ROBOT_PIVOT_POINT;
+	const double SHOOT_SPOT_DISTANCE = 130.9 - TOWER_DISTANCE;
 	const double TURN_ANGLE = 60.0;
-	const double LOAD_HIGH_ANGLE = 0.0; // max angle of loader arm
-	const double TURN_AROUND_ANGLE = (180 * M_1_PI) * asin(48.0/(sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216)));
+	const double TURN_AROUND_ANGLE =  TURN_ANGLE + (180 * M_1_PI) * asin(48.0/(sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216)));
 	const double C_DISTANCE = (sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216));
 	const double TURN_TO_C_ANGLE = 180.0; // check all these angles when testing
 	const double TO_C_DISTANCE = TURN_SPOT_DISTANCE + ROBOT_PIVOT_POINT;
 
+	a_Gyro.Update();
+	float gyroValue = a_Gyro.GetAngle();
+	SmartDashboard::PutNumber("Gyro, yum", gyroValue);
+
+	a_Shooter.Update(a_Joystick);
+
 	switch (a_AutoState) {
 	case kMoveToLowBar:
 		if (tankDistance < LOW_BAR_DISTANCE) {
-			a_Tank.AutonUpdate(0.5, 0.5);
+			a_Tank.AutonUpdate(-0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveUnderLowBar;
+			tankDistance = 0.0;
 		}
 		break;
 	case kMoveUnderLowBar:
+
 		if (tankDistance < LOW_BAR_CLEAR) {
-			a_Tank.AutonUpdate(0.5, 0.5); //change to a usable speed
+			a_Tank.AutonUpdate(-0.5, 0.5); //change to a usable speed
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveToShoot;
+			tankDistance = 0.0;
 		}
 		break;
 	case kMoveToShoot:
 		if (tankDistance < TURN_SPOT_DISTANCE) {
-			a_Tank.AutonUpdate(0.5, 0.5);
+			a_Tank.AutonUpdate(-0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
+			nextState = kTurnToShootWait;
+			tankDistance = 0.0;
+			tState = Timer::GetFPGATimestamp();
+		}
+		break;
+	case kTurnToShootWait:
+		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kTurnToShoot;
 		}
 		break;
 	case kTurnToShoot:
-		if (a_Gyro.GetAngle() < TURN_ANGLE) {
-			a_Tank.AutonUpdate(0.5, -0.5);
+		if (gyroValue < TURN_ANGLE) {
+			a_Tank.AutonUpdate(-0.5, -0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
+			nextState = kMoveTowardsTowerWait;
+			tankDistance = 0.0;
+			tState = Timer::GetFPGATimestamp();
+		}
+		break;
+	case kMoveTowardsTowerWait:
+		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kMoveTowardsTower;
 		}
 		break;
 	case kMoveTowardsTower:
 		if (tankDistance < SHOOT_SPOT_DISTANCE) {
-			a_Tank.AutonUpdate(0.5, 0.5);
+			a_Tank.AutonUpdate(-0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kLoadingBot;
+			tankDistance = 0.0;
 		}
 		break;
 	case kLoadingBot:
-		if (!a_CollectorSwitch.Get()) {
-			a_Collector.Set(0.5);
-		} else {
-			a_Collector.Set(0.0);
-			nextState = kLoaderDown;
-		}
+			a_Collector.SetAngle(90.0);
+			if( fabs(a_Collector.GetAngle() - 90.0) < 3) {
+				nextState = kLoaderDown;
+				tankDistance = 0.0;
+			}
 		break;
 	case kLoaderDown:
-		if (!a_CollectorSwitch.Get()) {
-			a_Collector.Set(-0.5);
-		} else {
-			a_Collector.Set(0.0);
+		a_Collector.SetAngle(0);
+		if( fabs(a_Collector.GetAngle()) < 3) {
 			nextState = kCheckAim;
+			tankDistance = 0.0;
 		}
 		break;
 	case kCheckAim:
 		// insert vision code here
+		nextState = kAdjust;
 		break;
 	case kAdjust:
 		// more vision code here- let's talk to Alexander!
+		nextState = kShootWait;
+		tState = Timer::GetFPGATimestamp();
+		break;
+	case kShootWait:
+		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
+			nextState = kShoot;
+		}
 		break;
 	case kShoot:
 		a_Shooter.Fire(); // unsure if cock function needs to be called // it doesn't, don't worry
 		nextState = kTurnBack;
+		tankDistance = 0.0;
 		break;
 	case kTurnBack:
-		if (a_Gyro.GetAngle() < TURN_AROUND_ANGLE) {
-			a_Tank.AutonUpdate(0.5, -0.5);
+		if (gyroValue < TURN_AROUND_ANGLE) {
+			a_Tank.AutonUpdate(-0.5, -0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kDriveToTurnPoint;
+			tankDistance = 0.0;
 		}
 		break;
 	case kDriveToTurnPoint:
 		if (tankDistance < C_DISTANCE) {
-			a_Tank.AutonUpdate(0.5, 0.5);
+			a_Tank.AutonUpdate(-0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kTurnToC;
+			tankDistance = 0.0;
 		}
 		break;
 	case kTurnToC:
-			if (a_Gyro.GetAngle() < TURN_TO_C_ANGLE) {
-				a_Tank.AutonUpdate(0.5, -0.5);
+			if (gyroValue < TURN_TO_C_ANGLE) {
+				a_Tank.AutonUpdate(-0.5, -0.5);
 			} else {
 				a_Tank.AutonUpdate(0, 0);
 				nextState = kDriveToC;
+				tankDistance = 0.0;
 			}
 			break;
 	case kDriveToC:
 			if (tankDistance < TO_C_DISTANCE) {
-				a_Tank.AutonUpdate(0.5, 0.5);
+				a_Tank.AutonUpdate(-0.5, 0.5);
 			} else {
 				a_Tank.AutonUpdate(0, 0);
 				nextState = kAutoIdle;
+				tankDistance = 0.0;
 			}
 			break;
 	case kAutoIdle:
 		a_Tank.AutonUpdate(0, 0);
+		tankDistance = 0.0;
 		break;
 	}
 

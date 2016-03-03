@@ -119,7 +119,7 @@ float ShifterController::Get()
 
 float ShifterController::GetDistance()
 {
-	return _encoder.GetDistance();
+	return _encoder.GetRaw();
 }
 
 float ShifterController::GetRate()

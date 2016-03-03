@@ -22,11 +22,15 @@ enum AutoState {
 	kMoveUnderLowBar,
 	kMoveToShoot,
 	kTurnToShoot,
+	kTurnToShootWait,
 	kMoveTowardsTower,
+	kMoveTowardsTowerWait,
+	// kLoadingBotWait,
 	kLoadingBot,
 	kLoaderDown,
 	kCheckAim,
 	kAdjust,
+	kShootWait,
 	kShoot,
 	kTurnBack,
 	kDriveToTurnPoint,
@@ -78,6 +82,8 @@ private:
 	Tank a_Tank;
 
 	AutoState a_AutoState;
+
+	double tState;
 
 
 

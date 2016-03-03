@@ -332,5 +332,5 @@ void Tank::SetTwistingRelAngle(float gyroAngle, float angle)
 
 float Tank::GetDistance()
 {
-	return (a_LeftSide.GetDistance() + a_RightSide.GetDistance()) / 2.0 ;
+	return ( fabs( a_LeftSide.GetDistance() ) + fabs( a_RightSide.GetDistance() ) ) / 2.0 ;
 }
