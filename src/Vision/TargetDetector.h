@@ -1,5 +1,6 @@
 #pragma once
 #include "ImageFilter.h"
+#include "../LightRingController.h"
 #include <WPILib.h>
 
 class TargetDetector {
@@ -28,6 +29,8 @@ private:
 
 	std::atomic_bool a_DebugMode;
 	std::atomic_bool a_Processing;
+
+	LightRingController a_LightRing;
 
 	std::thread a_ImageCaptureTask;
 	std::thread a_ImageProcessingTask;
