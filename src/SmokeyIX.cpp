@@ -10,9 +10,10 @@ SmokeyIX::SmokeyIX(void):
 		a_Joystick2(JOYSTICKTWO_PORT),
 		a_PDP(PDP_PORT),
 		a_Compressor(PCM_PORT),
-		a_Winch(WINCH, WINCH_PORT_A, WINCH_PORT_B),
+		a_Winch(WINCH, WINCH_PORT_A, WINCH_PORT_B, WINCH_SWITCH_PORT),
 		a_Finger(FINGER, FINGER_ENCODER_PORT, 0, 0), // Third argument is our upper limit on the encoder, fourth is our lower limit
 		a_Collector(COLLECTOR, COLLECTOR_ENCODER_PORT, 0, 0), // See above
+		a_CollectorSwitch(COLLECTOR_SWITCH_PORT),
 		a_Shooter(SHOOTER, SHOOTER_ENCODER_PORT),
 		a_Roller(ROLLER, ROLLER_SWITCH_PORT),
 		a_LeftSol(PCM_PORT, LEFT_SOL_PORT_ONE,LEFT_SOL_PORT_TWO),   // Must specify port # if not 0
@@ -20,10 +21,10 @@ SmokeyIX::SmokeyIX(void):
 		a_Left(BACK_LEFT_ONE, BACK_LEFT_TWO, a_LeftSol, LEFT_ENCODER_PORT_A, LEFT_ENCODER_PORT_B),
 		a_Right(BACK_RIGHT_ONE, BACK_RIGHT_TWO, a_LeftSol, RIGHT_ENCODER_PORT_A, RIGHT_ENCODER_PORT_B),
 		a_Tank(a_Left,a_Right),
-		a_AutoState(kAutoIdle),
-		a_TargetDetector("10.23.58.11")
+		a_AutoState(kAutoIdle)
+		// a_TargetDetector("10.23.58.11")
 {
-
+	tState = 0;
 }
 
 void SmokeyIX::RobotInit()
@@ -36,7 +37,7 @@ void SmokeyIX::RobotInit()
 void SmokeyIX::DisabledInit()
 {
 	a_Tank.Disable();
-	a_TargetDetector.StopProcessing();
+	// a_TargetDetector.StopProcessing();
 }
 
 void SmokeyIX::AutonomousInit()
@@ -44,109 +45,167 @@ void SmokeyIX::AutonomousInit()
 	a_Gyro.Cal();
 	a_AutoState = kMoveUnderLowBar;
 	a_Tank.Enable();
+	a_Collector.Init();
+	a_Left.ResetEncoder();
+	a_Right.ResetEncoder();
+	tState = 0;
 }
 
 void SmokeyIX::AutonomousPeriodic()
 {
 	AutoState nextState = a_AutoState;
 
-	int tankDistance = 0;
+	const double CONVERSION_FACTOR = (3.2 * 3.14159265) / 1000;
+	float tankDistance = a_Tank.GetDistance() * CONVERSION_FACTOR;
+	SmartDashboard::PutNumber("Tank Distance", tankDistance);
 
-	const double lowBarDistance = 0.0; //77.0" - ROBOT_LENGTH
-	const double lowBarClear = 0.0; //48.0" + ROBOT_LENGTH
-	const double turnSpotDistance = 0.0; //113.06" - ROBOT_PIVOT_POINT
-	const double shootSpotDistance = 0.0;
-	const double turnAngle = 60.0;
-	const double turnAroundAngle = (180 * M_1_PI) * asin(48.0/(sqrt(pow(shootSpotDistance,2) - 96*sqrt(3)*shootSpotDistance + 9216)));
-	const double turnToCAngle = 180.0 - turnAngle - turnAroundAngle; // check all these angles when testing // 30 if past batter
-	const double cDistance = (sqrt(pow(shootSpotDistance,2) - 96*sqrt(3)*shootSpotDistance + 9216));
-	const double throughCDistance = 0.0; //dependent on shootSpotDistance
+	const double LOW_BAR_DISTANCE = 77.0 - ROBOT_LENGTH;
+	const double LOW_BAR_CLEAR = 48.0 + ROBOT_LENGTH;
+	const double TURN_SPOT_DISTANCE = 113.06 - ROBOT_PIVOT_POINT;
+	const double SHOOT_SPOT_DISTANCE = 130.9 - TOWER_DISTANCE;
+	const double TURN_ANGLE = 60.0;
+	const double TURN_AROUND_ANGLE =  TURN_ANGLE + (180 * M_1_PI) * asin(48.0/(sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216)));
+	const double C_DISTANCE = (sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216));
+	const double TURN_TO_C_ANGLE = 180.0; // check all these angles when testing
+	const double TO_C_DISTANCE = TURN_SPOT_DISTANCE + ROBOT_PIVOT_POINT;
+
+	a_Gyro.Update();
+	float gyroValue = a_Gyro.GetAngle();
+	SmartDashboard::PutNumber("Gyro, yum", gyroValue);
+
+	a_Shooter.Update(a_Joystick);
 
 	switch (a_AutoState) {
 	case kMoveToLowBar:
-		if (tankDistance < lowBarDistance) {
-			a_Tank.AutonUpdate(0.5, 0.5);
+		if (tankDistance < LOW_BAR_DISTANCE) {
+			a_Tank.AutonUpdate(-0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveUnderLowBar;
+			tankDistance = 0.0;
 		}
 		break;
 	case kMoveUnderLowBar:
-		if (tankDistance < lowBarClear) {
-			a_Tank.AutonUpdate(0.5, 0.5); //change to a usable speed
+
+		if (tankDistance < LOW_BAR_CLEAR) {
+			a_Tank.AutonUpdate(-0.5, 0.5); //change to a usable speed
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveToShoot;
+			tankDistance = 0.0;
 		}
 		break;
 	case kMoveToShoot:
-		if (tankDistance < turnSpotDistance) {
-			a_Tank.AutonUpdate(0.5, 0.5);
+		if (tankDistance < TURN_SPOT_DISTANCE) {
+			a_Tank.AutonUpdate(-0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
+			nextState = kTurnToShootWait;
+			tankDistance = 0.0;
+			tState = Timer::GetFPGATimestamp();
+		}
+		break;
+	case kTurnToShootWait:
+		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kTurnToShoot;
 		}
 		break;
 	case kTurnToShoot:
-		if (a_Gyro.GetAngle() < turnAngle) {
-			a_Tank.AutonUpdate(0.5, -0.5);
+		if (gyroValue < TURN_ANGLE) {
+			a_Tank.AutonUpdate(-0.5, -0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
+			nextState = kMoveTowardsTowerWait;
+			tankDistance = 0.0;
+			tState = Timer::GetFPGATimestamp();
+		}
+		break;
+	case kMoveTowardsTowerWait:
+		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kMoveTowardsTower;
 		}
 		break;
 	case kMoveTowardsTower:
-		if (tankDistance < shootSpotDistance) {
-					a_Tank.AutonUpdate(0.5, 0.5);
-				} else {
-					a_Tank.AutonUpdate(0, 0);
-					nextState = kCheckAim;
-				}
-				break;
+		if (tankDistance < SHOOT_SPOT_DISTANCE) {
+			a_Tank.AutonUpdate(-0.5, 0.5);
+		} else {
+			a_Tank.AutonUpdate(0, 0);
+			nextState = kLoadingBot;
+			tankDistance = 0.0;
+		}
+		break;
+	case kLoadingBot:
+			a_Collector.SetAngle(90.0);
+			if( fabs(a_Collector.GetAngle() - 90.0) < 3) {
+				nextState = kLoaderDown;
+				tankDistance = 0.0;
+			}
+		break;
+	case kLoaderDown:
+		a_Collector.SetAngle(0);
+		if( fabs(a_Collector.GetAngle()) < 3) {
+			nextState = kCheckAim;
+			tankDistance = 0.0;
+		}
+		break;
 	case kCheckAim:
 		// insert vision code here
+		nextState = kAdjust;
 		break;
 	case kAdjust:
 		// more vision code here- let's talk to Alexander!
+		nextState = kShootWait;
+		tState = Timer::GetFPGATimestamp();
 		break;
-	case kShoot:
-		a_Shooter.Fire(); // unsure if cock function needs to be called
-		nextState = kTurnBack;
-		break;
-	case kTurnBack:
-		if (a_Gyro.GetAngle() < turnAroundAngle) {
-			a_Tank.AutonUpdate(0.5, -0.5);
-		} else {
-			a_Tank.AutonUpdate(0, 0);
-			nextState = kDriveToC;
+	case kShootWait:
+		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
+			nextState = kShoot;
 		}
 		break;
-	case kDriveToC:
-		if (tankDistance < cDistance) {
-			a_Tank.AutonUpdate(0.5, 0.5);
+	case kShoot:
+		a_Shooter.Fire(); // unsure if cock function needs to be called // it doesn't, don't worry
+		nextState = kTurnBack;
+		tankDistance = 0.0;
+		break;
+	case kTurnBack:
+		if (gyroValue < TURN_AROUND_ANGLE) {
+			a_Tank.AutonUpdate(-0.5, -0.5);
+		} else {
+			a_Tank.AutonUpdate(0, 0);
+			nextState = kDriveToTurnPoint;
+			tankDistance = 0.0;
+		}
+		break;
+	case kDriveToTurnPoint:
+		if (tankDistance < C_DISTANCE) {
+			a_Tank.AutonUpdate(-0.5, 0.5);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kTurnToC;
+			tankDistance = 0.0;
 		}
 		break;
 	case kTurnToC:
-			if (a_Gyro.GetAngle() < turnToCAngle) {
-				a_Tank.AutonUpdate(0.5, -0.5);
+			if (gyroValue < TURN_TO_C_ANGLE) {
+				a_Tank.AutonUpdate(-0.5, -0.5);
 			} else {
 				a_Tank.AutonUpdate(0, 0);
-				nextState = kDriveThroughC;
+				nextState = kDriveToC;
+				tankDistance = 0.0;
 			}
 			break;
-	case kDriveThroughC:
-			if (tankDistance < throughCDistance) {
-				a_Tank.AutonUpdate(0.5, 0.5);
+	case kDriveToC:
+			if (tankDistance < TO_C_DISTANCE) {
+				a_Tank.AutonUpdate(-0.5, 0.5);
 			} else {
 				a_Tank.AutonUpdate(0, 0);
 				nextState = kAutoIdle;
+				tankDistance = 0.0;
 			}
 			break;
 	case kAutoIdle:
 		a_Tank.AutonUpdate(0, 0);
+		tankDistance = 0.0;
 		break;
 	}
 
@@ -157,18 +216,28 @@ void SmokeyIX::AutonomousPeriodic()
 void SmokeyIX::TeleopInit()
 {
 	a_Gyro.Cal();
-	a_Tank.Enable();
-	a_TargetDetector.StartProcessing();
+	a_Tank.Enable(); // Don't add mysterious methods in that we haven't tested, alexander
+	a_Left.DisablePIDControl();
+	a_Right.DisablePIDControl();
+	a_Collector.Init();
+	// a_TargetDetector.StartProcessing();
 }
 
 void SmokeyIX::TeleopPeriodic()
 {
-
-	a_Tank.Update(a_Joystick, a_Joystick2);
 	a_Gyro.Update();
+	if(a_Joystick2.GetRawButton(6)) {
+		a_Tank.SetTwistingMode();
+		a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), 30);
+	}
+	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle());
+
 
 	if(a_Joystick.GetRawButton(1)) {
 		a_Shooter.Fire();
+	}
+	if(a_Joystick.GetRawButton(10)) {
+		a_Shooter.Stop();
 	}
 	a_Shooter.Update(a_Joystick);
 
@@ -180,31 +249,38 @@ void SmokeyIX::TeleopPeriodic()
 	a_Shooter.Update();
 	*/
 
-	a_Collector.Update(a_Joystick, 3, 5, 0.5);
+	a_Collector.Update(a_Joystick, 3, 5, 4, 6, 2);
 
-	if (a_Joystick.GetRawButton(4)) {
-		a_Winch.Update(a_Joystick.GetRawButton(4));
-	} else if (a_Joystick.GetRawButton(6)) {
-		a_Winch.Update(-1.0 * a_Joystick.GetRawButton(6));
+
+	if (a_Joystick2.GetRawButton(4)) {
+		a_Winch.Set(a_Joystick2.GetRawButton(4));
+	} else if (a_Joystick2.GetRawButton(5)) {
+		a_Winch.Set(-1.0 * a_Joystick2.GetRawButton(5));
 	} else {
-		a_Winch.Update(0);
+		a_Winch.Set(0);
 	}
 
 
 	// a_Finger.Update(a_Joystick, 7, 8, 0.5);
 
 	//Roller Test
-	if(a_Joystick.GetRawButton(9)) {
-		a_Roller.Update(1.0 );
+	if(a_Joystick2.GetRawButton(2)) {
+		a_Roller.Update(0.25);
+	} else if(a_Joystick2.GetRawButton(1)) {
+		a_Roller.Update(-0.5);
 	} else {
 		a_Roller.Update(0);
 	}
 
+	if(a_Joystick2.GetRawButton(3)) {
+		a_Gyro.Cal();
+	}
 
+	SmartDashboard::PutNumber("Collector Angle", a_Collector.GetAngle());
 	SmartDashboard::PutNumber("Gyro value", a_Gyro.GetAngle());
 	SmartDashboard::PutNumber("Shooter", a_Shooter.GetPosition());
 	SmartDashboard::PutNumber("Winch", a_Winch.GetLength());
-	printf("Shooter angle value: %6.2f\n", a_Shooter.GetPosition());
+	// printf("Shooter angle value: %6.2f\n", a_Shooter.GetPosition());
 	/* TODO: remove test code
 	 SmartDashboard::PutBoolean("LeftA", a_LeftA.Get());
 	 SmartDashboard::PutBoolean("RightB", a_RightB.Get());
@@ -223,7 +299,7 @@ void SmokeyIX::TestInit()
 
 void SmokeyIX::TestPeriodic()
 {
-	a_Tank.Update(a_Joystick, a_Joystick2);
+	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle());
 
 	if(a_Joystick.GetRawButton(1)) {
 		a_Shooter.Set(a_Joystick.GetRawButton(1));
@@ -232,7 +308,7 @@ void SmokeyIX::TestPeriodic()
 	}
 
 
-	a_Collector.Update(a_Joystick, 3, 5, 0.5);
+	// a_Collector.Update(a_Joystick, 3, 5, 0.5);
 
 	if (a_Joystick.GetRawButton(4)) {
 		a_Winch.Update(a_Joystick.GetRawButton(4));

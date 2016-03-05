@@ -11,11 +11,12 @@
 class Lifter // This is for a motor that extends an arm, like a tape measure- uses a Quadrature Encoder- lifts the bot
 {
 public:
-	Lifter(int TalonPort, int EncoderAPort, int EncoderBPort);
+	Lifter(int TalonPort, int EncoderAPort, int EncoderBPort, int SwitchPort);
 	~Lifter();
-	void Update(float value, uint8_t syncGroup = 0);
+	void Update(uint8_t syncGroup = 0);
 	void Set(float value1, float setPoint);
 	float GetLength();
+	void Set(float value);
 	void Disable();
 
 	void PIDWrite(float output);
@@ -24,6 +25,8 @@ private:
 	CanTalonSRX LifterC;
 
 	Encoder EncoderC;
+
+	DigitalInput a_LifterSwitch;
 };
 
 

@@ -22,14 +22,20 @@ enum AutoState {
 	kMoveUnderLowBar,
 	kMoveToShoot,
 	kTurnToShoot,
+	kTurnToShootWait,
 	kMoveTowardsTower,
+	kMoveTowardsTowerWait,
+	// kLoadingBotWait,
+	kLoadingBot,
+	kLoaderDown,
 	kCheckAim,
 	kAdjust,
+	kShootWait,
 	kShoot,
 	kTurnBack,
-	kDriveToC,
+	kDriveToTurnPoint,
 	kTurnToC,
-	kDriveThroughC,
+	kDriveToC,
 	kAutoIdle
 };
 
@@ -61,6 +67,8 @@ private:
 
 	PivotArm a_Collector;
 
+	DigitalInput a_CollectorSwitch;
+
 	Shooter a_Shooter;
 
 	Roller a_Roller;
@@ -75,7 +83,11 @@ private:
 
 	AutoState a_AutoState;
 
-	TargetDetector a_TargetDetector;
+	double tState;
+
+
+
+	// TargetDetector a_TargetDetector;
 };
 
 #endif /* SRC_SMOKEYIX_H_ */

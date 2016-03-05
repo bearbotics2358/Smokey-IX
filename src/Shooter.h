@@ -19,7 +19,7 @@ public:
 	void Update(Joystick &a_Stick);
 	float GetPosition();
 	void SetPosition(float SetPoint);
-	void Cock();
+	void Stop();
 	void Fire();
 	void Set(float value);
 	void Disable();

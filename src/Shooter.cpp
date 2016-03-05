@@ -1,4 +1,5 @@
 /*
+
  * Shooter.cpp
  *
  *  Created on: Feb 4, 2016
@@ -10,14 +11,15 @@
 
 bool cockIt = true;
 bool fireIt = false;
-int cockValue = 2800;
-int armedTolerance = 200; // ROUGHLY ten degrees
+int cockValue = 3200;
+int uncockedValue = 1150;
+int oldValue = 0;
 
 Shooter::Shooter(int TalonPort, int AbsPort):
 		ShooterC(TalonPort),
 		EncoderC(AbsPort)
 {
-
+	oldValue = EncoderC.GetValue();
 }
 
 Shooter::~Shooter()
@@ -27,8 +29,9 @@ Shooter::~Shooter()
 
 void Shooter::Update(Joystick &a_Stick)
 {
+	int currentValue = EncoderC.GetValue();
 	if(cockIt) {
-		if( fabs(EncoderC.GetValue() - cockValue) > armedTolerance) {
+		if(currentValue <= cockValue) {
 			ShooterC.Set(0.5);
 		} else {
 			cockIt = false;
@@ -36,16 +39,15 @@ void Shooter::Update(Joystick &a_Stick)
 		}
 	} else if(fireIt) {
 		ShooterC.Set(1);
-		if(a_Stick.GetRawButton(1))
+		if(currentValue < oldValue) // evaluates to true if we pass the zero position
 		{
-			fireIt = true;
-		} else {
 			fireIt = false;
 			cockIt = true;
 		}
 	} else {
 		ShooterC.Set(0);
 	}
+	oldValue = currentValue;
 }
 
 float Shooter::GetPosition()
@@ -58,14 +60,16 @@ void Shooter::SetPosition(float SetPoint)
 
 }
 
-void Shooter::Cock()
+void Shooter::Stop()
 {
-	cockIt = true;
+	cockIt = false;
+	fireIt = false;
 }
 
 void Shooter::Fire()
 {
 	fireIt = true;
+	cockIt = false;
 }
 
 void Shooter::Set(float value)

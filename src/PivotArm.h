@@ -18,7 +18,8 @@ public:
 	~PivotArm();
 	void Init();
 	void Set(float value, uint8_t syncGroup = 0);
-	void Update(Joystick &stick, int port1, int port2, float value);
+	void SetAngle(float angleToSet);
+	void Update(Joystick &stick, int port1, int port2, int port3, int port4, int port5);
 	float GetAngle();
 	void Disable();
 
@@ -28,7 +29,7 @@ private:
 	int upperLimit;
 	int lowerLimit;
 
-	CanTalonSRX ArmC;
+	CANTalon ArmC;
 
 	AnalogInput EncoderC;
 

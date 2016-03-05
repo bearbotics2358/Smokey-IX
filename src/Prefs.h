@@ -30,12 +30,14 @@
 #define WINCH 14
 #define WINCH_PORT_A 5
 #define WINCH_PORT_B 6
+#define WINCH_SWITCH_PORT 7
 
 #define FINGER 17
 #define FINGER_ENCODER_PORT 0
 
 #define COLLECTOR 15
 #define COLLECTOR_ENCODER_PORT 1
+#define COLLECTOR_SWITCH_PORT 9
 
 #define SHOOTER 16
 #define SHOOTER_ENCODER_PORT 2
@@ -52,6 +54,7 @@
 
 #define ROBOT_LENGTH 31.0 // This is in inches
 #define ROBOT_PIVOT_POINT 6.5 //From back of frame in inches
+#define TOWER_DISTANCE 0.0 // distance from face of tower when shooting
 
 
 #endif /* SRC_PREFS_H_ */

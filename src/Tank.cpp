@@ -14,11 +14,16 @@ const int         Tank::CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK      = 3;
 const std::string Tank::CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK_KEY  = "Arcade Drive (one gamepad stick)";
 const int         Tank::CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS     = 4;
 const std::string Tank::CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS_KEY = "Arcade Drive (two gamepad sticks)";
+const int		 Tank::CONTROL_TYPE_TWIST = 5;
+const std::string Tank::CONTROL_TYPE_TWIST_KEY = "Come on now, let's do the twist";
 
 const std::string Tank::ARCADE_TUNING_PARAM_A_KEY     = "Arcade Drive Tuning Parameter (A)";
 const double      Tank::ARCADE_TUNING_PARAM_A_DEFAULT = 0.0;
 const std::string Tank::ARCADE_TUNING_PARAM_B_KEY = "Arcade Drive Tuning Parameter (B)";
 const double      Tank::ARCADE_TUNING_PARAM_B_DEFAULT = 1.0;
+
+bool isTwisting = false;
+float setAngle;
 
 Tank::Tank(ShifterController &Left, ShifterController &Right):
 		a_LeftSide(Left),
@@ -42,6 +47,8 @@ void Tank::Init()
 									(void *)&CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS_KEY,
 									(void *)&CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS);
+	a_ControlTypeChooser.AddObject(CONTROL_TYPE_TWIST_KEY,
+									(void *)&CONTROL_TYPE_TWIST);
 	SmartDashboard::PutData(CONTROL_TYPE_KEY, &a_ControlTypeChooser);
 
 	SmartDashboard::PutNumber(ARCADE_TUNING_PARAM_A_KEY, ARCADE_TUNING_PARAM_A_DEFAULT);
@@ -134,7 +141,8 @@ void EtherArcade(double fwd, double rcw, double a, double b, double &out_left, d
 	}
 }
 
-void Tank::Update(Joystick &stick, Joystick &stick2) {
+void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
+{
 
 	if(stick.GetRawButton(11))
 	{
@@ -192,7 +200,15 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 
 	// SendableChooser *controlTypeChooser =
 	// 		(SendableChooser *)SmartDashboard::GetData(CONTROL_TYPE_KEY);
-	int *controlType = (int *)a_ControlTypeChooser.GetSelected();
+	int *controlType;
+	int controlTypeTwist = CONTROL_TYPE_TWIST;
+
+	if(!isTwisting) {
+		controlType = (int *)a_ControlTypeChooser.GetSelected();
+	} else {
+		controlType = &controlTypeTwist;
+	}
+	// printf("Control Type : %d\n", *controlType);
 
 	if (controlType == NULL)
 	{
@@ -230,6 +246,39 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 		EtherArcade(stick2.GetRawAxis(1), stick2.GetRawAxis(4) * -1.0, a, b, left, right);
 		right *= -1.0;
 		break;
+	case CONTROL_TYPE_TWIST:
+		int diff = fabs(setAngle - gyroValue);
+		if(gyroValue < setAngle - 3) {
+
+			if(diff > 10)
+			{
+				left = -0.3;
+				right = -0.3;
+			} else {
+				left = -0.2;
+				right = -0.2;
+			}
+
+
+		} else if(gyroValue > setAngle + 3) {
+
+			if(diff > 10)
+			{
+				left = 0.3;
+				right = 0.3;
+			} else {
+				left = 0.2;
+				right = 0.2;
+			}
+
+		} else {
+			left = 0;
+			right = 0;
+			isTwisting = false;
+		}
+		break;
+	// case TURN_TO_HIGH_GOAL:
+
 	}
 
 	if (fabs(left) < kJoystickDeadzone)
@@ -254,12 +303,34 @@ void Tank::Update(Joystick &stick, Joystick &stick2) {
 	a_RightSide.Set(right);
 }
 
-void Tank::AutonUpdate(double left, double right) {
+void Tank::AutonUpdate(double left, double right)
+{
 	a_LeftSide.Set(left);
     a_RightSide.Set(right);
 }
 
+void Tank::SimpleUpdate(Joystick &stick, Joystick &stick2)
+{
+	a_LeftSide.Set(stick2.GetY());
+	a_RightSide.Set( -1.0 * stick.GetY());
+}
+
+void Tank::SetTwistingMode()
+{
+	isTwisting = 1;
+}
+
+void Tank::SetTwistingAngle(float angle)
+{
+	setAngle = angle;
+}
+
+void Tank::SetTwistingRelAngle(float gyroAngle, float angle)
+{
+	setAngle = gyroAngle + angle;
+}
+
 float Tank::GetDistance()
 {
-	return (a_LeftSide.GetDistance() + a_RightSide.GetDistance()) / 2.0 ;
+	return ( fabs( a_LeftSide.GetDistance() ) + fabs( a_RightSide.GetDistance() ) ) / 2.0 ;
 }

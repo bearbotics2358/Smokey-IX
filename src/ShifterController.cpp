@@ -17,7 +17,7 @@ ShifterController::ShifterController(uint32_t leftMotor, uint32_t rightMotor,
 void ShifterController::Enable()
 {
 	_enabled = true;
-	EnablePIDControl();
+	// EnablePIDControl();
 }
 
 void ShifterController::Disable()
@@ -119,7 +119,7 @@ float ShifterController::Get()
 
 float ShifterController::GetDistance()
 {
-	return _encoder.GetDistance();
+	return _encoder.GetRaw();
 }
 
 float ShifterController::GetRate()
