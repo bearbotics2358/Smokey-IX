@@ -212,7 +212,7 @@ void TargetDetector::ImageProcessingTask() {
 
 			// Extract blueish pixels
 			CheckIMAQError(
-					imaqColorThreshold(curMonoImage.get(), curImage.get(), 255, IMAQ_HSL,
+					imaqColorThreshold(curMonoImage.get(), curImage.get(), 1, IMAQ_HSL,
 							&hueRange, &satRange, &valRange),
 					"imaqColorThreshold");
 			SaveImage("02-threshold", curMonoImage.get());
@@ -222,12 +222,6 @@ void TargetDetector::ImageProcessingTask() {
 						imaqDuplicate(debugImage.get(), curMonoImage.get()),
 						"imaqDuplicate");
 			}
-
-			// Normalize to a binary image
-			CheckIMAQError(
-					imaqLookup(curMonoImage.get(), curMonoImage.get(), lookupTable, nullptr),
-					"imaqLookup");
-			SaveImage("03-normalize", curMonoImage.get());
 
 			// Filters particles based on their size
 			CheckIMAQError(
