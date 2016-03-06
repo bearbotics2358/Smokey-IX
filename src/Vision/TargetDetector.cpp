@@ -29,6 +29,24 @@ void TargetDetector::CheckIMAQError(int rval, string desc) {
 	}
 }
 
+double TargetDetector::GetDistanceToTarget(ShapeReport &shape) {
+	// Available constants:
+	// M1013_VFOV_DEG     - vertical FOV of camera
+	// M1013_IMG_H        - height of picture in pixels
+	// VISION_TARGET_H_IN - height of vision target in inches
+
+	// Height of target in pixels
+	double targetHeight = shape.coordinates.height;
+
+	// Old math
+	// double distanceToTarget = cot((M1013_VFOV_DEG/M1013_IMG_H)*targetHeight)*VISION_TARGET_H_IN;
+
+	double distanceToTarget	= (VISION_TARGET_H_IN*sin((180-(90-M1013_VFOV_DEG))-(M1013_VFOV_DEG/M1013_IMG_H*targetHeight)))
+							   /sin(M1013_VFOV_DEG/M1013_IMG_H*targetHeight);
+
+	return distanceToTarget;
+}
+
 void TargetDetector::SaveImage(string name, Image *img) {
 	if (a_DebugMode) {
 		string filename("/home/lvuser/" + name + ".jpg");
@@ -101,6 +119,11 @@ void TargetDetector::ImageProcessingTask() {
 		lookupTable[i] = 1;
 	}
 
+	// HSL ranges for the color threshold operation
+	Range hueRange { 150, 200 }; // Extract blue
+	Range satRange { 0,   198 };
+	Range valRange { 0,   255 };
+
 	// Target template image
 	UniqueImgPtr targetTemplate(imaqCreateImage(IMAQ_IMAGE_U8, 7), imaqDispose);
 
@@ -122,7 +145,7 @@ void TargetDetector::ImageProcessingTask() {
 	int targetMatchesFound;
 
 	// Images will be copied into this image as they arrive from the camera
-	UniqueImgPtr curImage(imaqCreateImage(IMAQ_IMAGE_HSL, 0), imaqDispose);
+	UniqueImgPtr curImage(imaqCreateImage(IMAQ_IMAGE_HSL, 7), imaqDispose);
 	UniqueImgPtr curMonoImage(imaqCreateImage(IMAQ_IMAGE_U8, 7), imaqDispose);
 
 	// Used to display match results
@@ -157,7 +180,7 @@ void TargetDetector::ImageProcessingTask() {
 			// Start the clock
 			start = GetFPGATime();
 
-			/*
+			/* Extract luminance and cluster threshold
 			// Extract luminance plane
 			CheckIMAQError(
 					imaqExtractColorPlanes(curImage.get(), IMAQ_HSL, nullptr, nullptr, curMonoImage.get()),
@@ -173,23 +196,32 @@ void TargetDetector::ImageProcessingTask() {
 			SaveImage("02-threshold", curMonoImage.get());
 			*/
 
+			/* Extract hue plane and threshold
 			// Extract hue plane
 			CheckIMAQError(
 					imaqExtractColorPlanes(curImage.get(), IMAQ_HSL, nullptr, nullptr, curMonoImage.get()),
 					"imaqExtractColorPlanes");
 			SaveImage("01-extract-hue", curMonoImage.get());
-			
-			if (a_DebugMode) {
-				CheckIMAQError(
-						imaqDuplicate(debugImage.get(), curMonoImage.get()),
-						"imaqDuplicate");
-			}
 
 			// Threshold (extract blue content)
 			CheckIMAQError(
 					imaqThreshold(curMonoImage.get(), curMonoImage.get(), 220, 260, 1, 255),
 					"imaqThreshold");
 			SaveImage("02-threshold", curMonoImage.get());
+			*/
+
+			// Extract blueish pixels
+			CheckIMAQError(
+					imaqColorThreshold(curMonoImage.get(), curImage.get(), 255, IMAQ_HSL,
+							&hueRange, &satRange, &valRange),
+					"imaqColorThreshold");
+			SaveImage("02-threshold", curMonoImage.get());
+			
+			if (a_DebugMode) {
+				CheckIMAQError(
+						imaqDuplicate(debugImage.get(), curMonoImage.get()),
+						"imaqDuplicate");
+			}
 
 			// Normalize to a binary image
 			CheckIMAQError(
