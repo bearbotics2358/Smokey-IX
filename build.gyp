@@ -19,6 +19,7 @@
       'sources': [
         'src/JrimmyGyro.cpp',
         'src/Lifter.cpp',
+        'src/LightRingController.cpp',
         'src/PivotArm.cpp',
         'src/Roller.cpp',
         'src/ShifterController.cpp',

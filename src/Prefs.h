@@ -8,6 +8,7 @@
 #ifndef SRC_PREFS_H_
 #define SRC_PREFS_H_
 
+#define LIGHT_RING_CONTROLLER_ADDRESS 0x4
 
 #define JOYSTICK_PORT 0
 #define JOYSTICKTWO_PORT 5

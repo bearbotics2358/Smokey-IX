@@ -1,5 +1,6 @@
 #pragma once
 #include "ImageFilter.h"
+#include "../LightRingController.h"
 #include <WPILib.h>
 
 class TargetDetector {
@@ -18,7 +19,15 @@ public:
 	bool IsProcessing();
 
 private:
+	static constexpr float M1013_HFOV_DEG = 67.0;
+	static constexpr float M1013_VFOV_DEG = 49.3;
+	static constexpr float VISION_TARGET_H_IN = 12.0;
+	static constexpr float M1013_IMG_W = 640.0;
+	static constexpr float M1013_IMG_H = 480.0;
+
 	static void CheckIMAQError(int rval, std::string desc);
+
+	static double GetDistanceToTarget(ShapeReport &shape);
 
 	void SaveImage(std::string path, Image *img);
 	void ImageCaptureTask();
@@ -28,6 +37,8 @@ private:
 
 	std::atomic_bool a_DebugMode;
 	std::atomic_bool a_Processing;
+
+	LightRingController a_LightRing;
 
 	std::thread a_ImageCaptureTask;
 	std::thread a_ImageProcessingTask;

@@ -1,3 +1,8 @@
+# Eclipse stuff
+sysProps.xml
+.settings/language.settings.xml
+
+# Build products
 *.o
 Debug/
 Release/
@@ -5,3 +10,4 @@ out/
 build.Makefile
 FRCUserProgram.target.mk
 Makefile
+

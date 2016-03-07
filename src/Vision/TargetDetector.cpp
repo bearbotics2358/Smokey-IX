@@ -7,11 +7,12 @@ typedef unique_ptr<Image, decltype(&imaqDispose)> UniqueImgPtr;
 typedef unique_ptr<ShapeReport, decltype(&imaqDispose)> ShapeReportPtr;
 
 TargetDetector::TargetDetector(string ip):
-		a_DebugMode(false), a_Processing(false),
+		a_DebugMode(true), a_Processing(false),
 		a_ImageCaptureTask(&TargetDetector::ImageCaptureTask, this),
 		a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
 		a_Camera(ip) {
 	a_Camera.WriteResolution(AxisCamera::kResolution_640x480);
+	a_LightRing.SetColor(0, 0, 0, 255);
 }
 
 TargetDetector::~TargetDetector() {
@@ -28,12 +29,33 @@ void TargetDetector::CheckIMAQError(int rval, string desc) {
 	}
 }
 
+double TargetDetector::GetDistanceToTarget(ShapeReport &shape) {
+	// Available constants:
+	// M1013_VFOV_DEG     - vertical FOV of camera
+	// M1013_IMG_H        - height of picture in pixels
+	// VISION_TARGET_H_IN - height of vision target in inches
+
+	// Height of target in pixels
+	double targetHeight = shape.coordinates.height;
+
+	// Old math
+	// double distanceToTarget = cot((M1013_VFOV_DEG/M1013_IMG_H)*targetHeight)*VISION_TARGET_H_IN;
+
+	double distanceToTarget	= (VISION_TARGET_H_IN*sin((180-(90-M1013_VFOV_DEG))-(M1013_VFOV_DEG/M1013_IMG_H*targetHeight)))
+							   /sin(M1013_VFOV_DEG/M1013_IMG_H*targetHeight);
+
+	return distanceToTarget;
+}
+
 void TargetDetector::SaveImage(string name, Image *img) {
 	if (a_DebugMode) {
 		string filename("/home/lvuser/" + name + ".jpg");
+		string errorDesc = "imaqWriteJPEGFile(";
+		errorDesc.append(name);
+		errorDesc.append(")");
 	    CheckIMAQError(
 	        imaqWriteJPEGFile(img, filename.c_str(), 1000, NULL),
-	        "imaqWriteJPEGFile");
+	        errorDesc);
 	}
 }
 
@@ -97,23 +119,37 @@ void TargetDetector::ImageProcessingTask() {
 		lookupTable[i] = 1;
 	}
 
+	// HSL ranges for the color threshold operation
+	Range hueRange { 150, 200 }; // Extract blue
+	Range satRange { 0,   198 };
+	Range valRange { 0,   255 };
+
 	// Target template image
 	UniqueImgPtr targetTemplate(imaqCreateImage(IMAQ_IMAGE_U8, 7), imaqDispose);
-	CheckIMAQError(
-			imaqReadFile(targetTemplate.get(), "/home/lvuser/target_template.png", nullptr, nullptr),
-			"imaqReadFile(targetTemplate)");
 
-	// Normalize the target template
-	CheckIMAQError(
-			imaqLookup(targetTemplate.get(), targetTemplate.get(), lookupTable, nullptr),
-			"imaqLookup");
+	try {
+		CheckIMAQError(
+				imaqReadFile(targetTemplate.get(), "/home/lvuser/target_template.png", nullptr, nullptr),
+				"imaqReadFile(targetTemplate)");
+
+		// Normalize the target template
+		CheckIMAQError(
+				imaqLookup(targetTemplate.get(), targetTemplate.get(), lookupTable, nullptr),
+				"imaqLookup");
+	} catch (exception &ex) {
+		cout << ex.what() << endl;
+		return;
+	}
 
 	// Holds the results of the shape match
 	int targetMatchesFound;
 
 	// Images will be copied into this image as they arrive from the camera
-	UniqueImgPtr curImage(imaqCreateImage(IMAQ_IMAGE_HSL, 0), imaqDispose);
+	UniqueImgPtr curImage(imaqCreateImage(IMAQ_IMAGE_HSL, 7), imaqDispose);
 	UniqueImgPtr curMonoImage(imaqCreateImage(IMAQ_IMAGE_U8, 7), imaqDispose);
+
+	// Used to display match results
+	UniqueImgPtr debugImage(imaqCreateImage(IMAQ_IMAGE_U8, 7), imaqDispose);
 
 	// Used for benchmarking
 	uint64_t start, end;
@@ -144,6 +180,7 @@ void TargetDetector::ImageProcessingTask() {
 			// Start the clock
 			start = GetFPGATime();
 
+			/* Extract luminance and cluster threshold
 			// Extract luminance plane
 			CheckIMAQError(
 					imaqExtractColorPlanes(curImage.get(), IMAQ_HSL, nullptr, nullptr, curMonoImage.get()),
@@ -157,12 +194,34 @@ void TargetDetector::ImageProcessingTask() {
 				CheckIMAQError(0, "imaqAutoThreshold2");
 			}
 			SaveImage("02-threshold", curMonoImage.get());
+			*/
 
-			// Normalize to a binary image
+			/* Extract hue plane and threshold
+			// Extract hue plane
 			CheckIMAQError(
-					imaqLookup(curMonoImage.get(), curMonoImage.get(), lookupTable, nullptr),
-					"imaqLookup");
-			SaveImage("03-normalize", curMonoImage.get());
+					imaqExtractColorPlanes(curImage.get(), IMAQ_HSL, nullptr, nullptr, curMonoImage.get()),
+					"imaqExtractColorPlanes");
+			SaveImage("01-extract-hue", curMonoImage.get());
+
+			// Threshold (extract blue content)
+			CheckIMAQError(
+					imaqThreshold(curMonoImage.get(), curMonoImage.get(), 220, 260, 1, 255),
+					"imaqThreshold");
+			SaveImage("02-threshold", curMonoImage.get());
+			*/
+
+			// Extract blueish pixels
+			CheckIMAQError(
+					imaqColorThreshold(curMonoImage.get(), curImage.get(), 1, IMAQ_HSL,
+							&hueRange, &satRange, &valRange),
+					"imaqColorThreshold");
+			SaveImage("02-threshold", curMonoImage.get());
+			
+			if (a_DebugMode) {
+				CheckIMAQError(
+						imaqDuplicate(debugImage.get(), curMonoImage.get()),
+						"imaqDuplicate");
+			}
 
 			// Filters particles based on their size
 			CheckIMAQError(
@@ -196,8 +255,13 @@ void TargetDetector::ImageProcessingTask() {
 								<< "- score: " << shape.score << endl
 								<< "- center: (" << shape.centroid.x << ", " << shape.centroid.y << ")" << endl
 								<< "- size: " << shape.size << endl;
+
+						// Draw rectangle on debug image
+						imaqDrawShapeOnImage(debugImage.get(), debugImage.get(), shape.coordinates,
+								IMAQ_DRAW_VALUE, IMAQ_SHAPE_RECT, 255.0);
 					}
 				}
+				SaveImage("debug-output", debugImage.get());
 			}
 		} catch (runtime_error &ex) {
 			cout << ex.what() << endl;

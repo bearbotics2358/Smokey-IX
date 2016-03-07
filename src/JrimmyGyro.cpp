@@ -46,10 +46,16 @@ JrimmyGyro::~JrimmyGyro()
 void JrimmyGyro::WaitForValues()
 {
 	uint8_t stat;
+	bool result;
+
+	double start = Timer::GetFPGATimestamp();
+	double now;
 
 	do {
-		Read(kIntStatus, 1, &stat);
-	} while(!(stat & 1));
+		result = Read(kIntStatus, 1, &stat);
+		now = Timer::GetFPGATimestamp();
+	} while(!(stat & 1) && !result && ((now - start) < 0.500));
+	// TODO: report errors/timeouts
 }
 
 void JrimmyGyro::Init()
