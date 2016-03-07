@@ -16,6 +16,8 @@ const int         Tank::CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS     = 4;
 const std::string Tank::CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS_KEY = "Arcade Drive (two gamepad sticks)";
 const int		 Tank::CONTROL_TYPE_TWIST = 5;
 const std::string Tank::CONTROL_TYPE_TWIST_KEY = "Come on now, let's do the twist";
+const int		 Tank::CONTROL_TYPE_STICK_TWIST = 6;
+const std::string Tank::CONTROL_TYPE_STICK_TWIST_KEY = "aLEXIS PlZ";
 
 const std::string Tank::ARCADE_TUNING_PARAM_A_KEY     = "Arcade Drive Tuning Parameter (A)";
 const double      Tank::ARCADE_TUNING_PARAM_A_DEFAULT = 0.0;
@@ -49,6 +51,8 @@ void Tank::Init()
 									(void *)&CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_TWIST_KEY,
 									(void *)&CONTROL_TYPE_TWIST);
+	a_ControlTypeChooser.AddObject(CONTROL_TYPE_STICK_TWIST_KEY,
+									(void *)&CONTROL_TYPE_STICK_TWIST);
 	SmartDashboard::PutData(CONTROL_TYPE_KEY, &a_ControlTypeChooser);
 
 	SmartDashboard::PutNumber(ARCADE_TUNING_PARAM_A_KEY, ARCADE_TUNING_PARAM_A_DEFAULT);
@@ -67,47 +71,6 @@ void Tank::Disable()
 	a_RightSide.Disable();
 }
 
-/*
-function L(fwd,rcw,a,b: float): float;
-begin
-L := fwd + b*rcw*(1-fwd);
-end;
-
-function R(fwd,rcw,a,b: float): float;
-begin
-R := fwd - b*rcw + fwd*rcw*(b-a-1);
-end;
-
-procedure LR(fwd,rcw,a,b: float; var left,right: float);
-begin
-if fwd>=0 then
- begin
- if rcw>=0 then
-  begin {Q1}
-  left := L(fwd,rcw,a,b);
-  right := R(fwd,rcw,a,b);
-  end
- else
-  begin {Q2}
-  left := R(fwd,-rcw,a,b);
-  right := L(fwd,-rcw,a,b);
-  end
- end
-else
- begin
- if rcw>=0 then
-  begin {Q4}
-  left := -R(-fwd,rcw,a,b);
-  right := -L(-fwd,rcw,a,b);
-  end
- else
-  begin {Q3}
-  left := -L(-fwd,-rcw,a,b);
-  right := -R(-fwd,-rcw,a,b);
-  end
- end;
-end;
- */
 double EtherL(double fwd, double rcw, double a, double b) {
 	return fwd + b*rcw*(1-fwd);
 }
@@ -143,7 +106,6 @@ void EtherArcade(double fwd, double rcw, double a, double b, double &out_left, d
 
 void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 {
-
 	if(stick.GetRawButton(11))
 	{
 		a_LeftSide.ShiftHigh();
@@ -224,6 +186,8 @@ void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 	double left = 0.0;
 	double right = 0.0;
 
+	int diff = fabs(setAngle - gyroValue);
+
 	switch (*controlType)
 	{
 	case CONTROL_TYPE_TANK_TWO_JOYSTICKS:
@@ -247,38 +211,35 @@ void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 		right *= -1.0;
 		break;
 	case CONTROL_TYPE_TWIST:
-		int diff = fabs(setAngle - gyroValue);
 		if(gyroValue < setAngle - 3) {
-
-			if(diff > 10)
-			{
+			if(diff > 10) {
 				left = -0.3;
 				right = -0.3;
 			} else {
 				left = -0.2;
 				right = -0.2;
 			}
-
-
 		} else if(gyroValue > setAngle + 3) {
-
-			if(diff > 10)
-			{
+			if(diff > 10) {
 				left = 0.3;
 				right = 0.3;
 			} else {
 				left = 0.2;
 				right = 0.2;
 			}
-
 		} else {
 			left = 0;
 			right = 0;
 			isTwisting = false;
 		}
 		break;
-	// case TURN_TO_HIGH_GOAL:
-
+	case CONTROL_TYPE_STICK_TWIST:
+		float power = stick2.GetY();
+		float left = pow(stick2.GetRawAxis(3), 3);
+		float right = pow(stick2.GetRawAxis(2), 3);
+		left = power - left + right;
+		right = -1.0 * (power - right + left);
+		break;
 	}
 
 	if (fabs(left) < kJoystickDeadzone)
@@ -305,8 +266,11 @@ void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 
 void Tank::AutonUpdate(double left, double right)
 {
-	a_LeftSide.Set(left);
-    a_RightSide.Set(right);
+	double leftDistance = a_LeftSide.GetDistance();
+	double rightDistance = a_RightSide.GetDistance();
+	double percentDifference = (leftDistance - rightDistance) * TANK_CONVERSION_FACTOR * 0.1;
+	a_LeftSide.Set(left + percentDifference);
+    a_RightSide.Set(right - percentDifference);
 }
 
 void Tank::SimpleUpdate(Joystick &stick, Joystick &stick2)

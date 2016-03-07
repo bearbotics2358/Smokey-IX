@@ -49,7 +49,7 @@ void PivotArm::Update(Joystick &stick, int port1, int port2, int port3, int port
 	} else if(stick.GetRawButton(port2)) {
 		SetAngle(90);
 	} else if(stick.GetRawButton(port3)) {
-		SetAngle(45);
+		SetAngle(60);
 	} else if(stick.GetRawButton(port4)) {
 		SetAngle(115);
 	} else if(stick.GetRawButton(port5)) {

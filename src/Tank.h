@@ -37,6 +37,8 @@ private:
 	static const std::string CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS_KEY;
 	static const int		 CONTROL_TYPE_TWIST;
 	static const std::string CONTROL_TYPE_TWIST_KEY;
+	static const int		 CONTROL_TYPE_STICK_TWIST;
+	static const std::string CONTROL_TYPE_STICK_TWIST_KEY;
 
 	static const std::string ARCADE_TUNING_PARAM_A_KEY;
 	static const double      ARCADE_TUNING_PARAM_A_DEFAULT;

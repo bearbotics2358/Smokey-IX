@@ -18,7 +18,8 @@
 #define SRC_SMOKEYIX_H_
 
 enum AutoState {
-	kMoveToLowBar = 0,
+	kDropCollector = 0,
+	kMoveToLowBar,
 	kMoveUnderLowBar,
 	kMoveToShoot,
 	kTurnToShoot,
@@ -32,6 +33,7 @@ enum AutoState {
 	kAdjust,
 	kShootWait,
 	kShoot,
+	kTurnWait,
 	kTurnBack,
 	kDriveToTurnPoint,
 	kTurnToC,

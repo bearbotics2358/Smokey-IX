@@ -82,4 +82,7 @@ void Shooter::Disable()
 	ShooterC.Set(0);
 }
 
-
+bool Shooter::isCocked()
+{
+	return cockIt;
+}

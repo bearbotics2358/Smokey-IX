@@ -23,6 +23,7 @@ public:
 	void Fire();
 	void Set(float value);
 	void Disable();
+	bool isCocked();
 
 private:
 
