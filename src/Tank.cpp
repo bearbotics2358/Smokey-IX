@@ -275,6 +275,28 @@ void Tank::AutonUpdate(double left, double right)
     a_RightSide.Set(1.09 * right); // - percentDifference);
 }
 
+void Tank::AutonUpdateDriveStraight(double left, double right)
+{
+	double leftDistance = fabs(a_LeftSide.GetDistance());
+	double rightDistance = fabs(a_RightSide.GetDistance());
+	SmartDashboard::PutNumber("left auto", leftDistance);
+	SmartDashboard::PutNumber("right auto", rightDistance);
+	// difference in inches:
+	double inchDifference = (leftDistance - rightDistance) * TANK_CONVERSION_FACTOR * 0.1;
+	if(fabs(inchDifference) < 0.10) {
+		a_LeftSide.Set(left);
+    a_RightSide.Set(right);
+	} else if(inchDifference < 0) {
+		// turn right
+		a_LeftSide.Set(1.10 * left);
+    a_RightSide.Set(0.90 * right);
+	} else {
+		//turn left
+		a_LeftSide.Set(0.90 * left);
+    a_RightSide.Set(1.10 * right);
+	}
+}
+
 void Tank::SimpleUpdate(Joystick &stick, Joystick &stick2)
 {
 	a_LeftSide.Set(stick2.GetY());
