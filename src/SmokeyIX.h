@@ -86,6 +86,8 @@ private:
 	AutoState a_AutoState;
 
 	double tState;
+	int shooterCurrent;
+	int shooterStart;
 
 
 

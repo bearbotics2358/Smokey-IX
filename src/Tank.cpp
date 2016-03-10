@@ -266,11 +266,13 @@ void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 
 void Tank::AutonUpdate(double left, double right)
 {
-	double leftDistance = a_LeftSide.GetDistance();
-	double rightDistance = a_RightSide.GetDistance();
+	double leftDistance = fabs(a_LeftSide.GetDistance());
+	double rightDistance = fabs(a_RightSide.GetDistance());
+	SmartDashboard::PutNumber("left auto", leftDistance);
+	SmartDashboard::PutNumber("right auto", rightDistance);
 	double percentDifference = (leftDistance - rightDistance) * TANK_CONVERSION_FACTOR * 0.1;
-	a_LeftSide.Set(left + percentDifference);
-    a_RightSide.Set(right - percentDifference);
+	a_LeftSide.Set(left); //  + percentDifference);
+    a_RightSide.Set(1.09 * right); // - percentDifference);
 }
 
 void Tank::SimpleUpdate(Joystick &stick, Joystick &stick2)
@@ -297,4 +299,10 @@ void Tank::SetTwistingRelAngle(float gyroAngle, float angle)
 float Tank::GetDistance()
 {
 	return ( fabs( a_LeftSide.GetDistance() ) + fabs( a_RightSide.GetDistance() ) ) / 2.0 ;
+}
+
+void Tank::ResetEncoders()
+{
+	a_LeftSide.ResetEncoder();
+	a_RightSide.ResetEncoder();
 }

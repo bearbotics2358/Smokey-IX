@@ -25,6 +25,8 @@ SmokeyIX::SmokeyIX(void):
 		// a_TargetDetector("10.23.58.11")
 {
 	tState = 0;
+	shooterStart = -99;
+	shooterCurrent = 1000000000;
 }
 
 void SmokeyIX::RobotInit()
@@ -86,7 +88,7 @@ void SmokeyIX::AutonomousPeriodic()
 		break;
 	case kMoveToLowBar:
 		if (tankDistance < LOW_BAR_DISTANCE) {
-			a_Tank.AutonUpdate(-0.5, 0.5);
+			a_Tank.AutonUpdate(-0.35, 0.35);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveUnderLowBar;
@@ -95,7 +97,7 @@ void SmokeyIX::AutonomousPeriodic()
 		break;
 	case kMoveUnderLowBar:
 		if (tankDistance < LOW_BAR_CLEAR) {
-			a_Tank.AutonUpdate(-0.5, 0.5); //change to a usable speed
+			a_Tank.AutonUpdate(-0.35, 0.35); //change to a usable speed
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveToShoot;
@@ -103,8 +105,8 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kMoveToShoot:
-		if (tankDistance < TURN_SPOT_DISTANCE) {
-			a_Tank.AutonUpdate(-0.5, 0.5);
+		if (tankDistance < TURN_SPOT_DISTANCE + 18) {
+			a_Tank.AutonUpdate(-0.35, 0.35);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kTurnToShootWait;
@@ -118,12 +120,13 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kTurnToShoot:
-		if (gyroValue < TURN_ANGLE) {
-			a_Tank.AutonUpdate(-0.5, -0.5);
+		if (gyroValue < TURN_ANGLE - 15) {
+			a_Tank.AutonUpdate(-0.35, -0.35);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveTowardsTowerWait;
 			tankDistance = 0.0;
+			a_Tank.ResetEncoders();
 			tState = Timer::GetFPGATimestamp();
 		}
 		break;
@@ -133,8 +136,8 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kMoveTowardsTower:
-		if (tankDistance < SHOOT_SPOT_DISTANCE - 30) {
-			a_Tank.AutonUpdate(-0.5, 0.5);
+		if (tankDistance < 12) {
+			a_Tank.AutonUpdate(-0.35, 0.35);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kLoadingBot;
@@ -167,6 +170,7 @@ void SmokeyIX::AutonomousPeriodic()
 	case kShootWait:
 		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kShoot;
+			shooterStart = a_Shooter.GetPosition();
 		}
 		break;
 	case kShoot:
@@ -175,13 +179,16 @@ void SmokeyIX::AutonomousPeriodic()
 		tankDistance = 0.0;
 		break;
 	case kTurnWait:
-			if(a_Shooter.isCocked()) {
+		shooterCurrent = a_Shooter.GetPosition();
+			if(shooterCurrent < shooterStart) {
 				nextState = kTurnBack;
+			} else {
+				a_Shooter.Fire();
 			}
 			break;
 	case kTurnBack:
 		if (gyroValue < TURN_AROUND_ANGLE) {
-			a_Tank.AutonUpdate(-0.5, -0.5);
+			a_Tank.AutonUpdate(-0.35, -0.35);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kDriveToTurnPoint;
@@ -190,7 +197,7 @@ void SmokeyIX::AutonomousPeriodic()
 		break;
 	case kDriveToTurnPoint:
 		if (tankDistance < C_DISTANCE) {
-			a_Tank.AutonUpdate(-0.5, 0.5);
+			a_Tank.AutonUpdate(-0.35, 0.35);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kTurnToC;
@@ -199,7 +206,7 @@ void SmokeyIX::AutonomousPeriodic()
 		break;
 	case kTurnToC:
 			if (gyroValue < TURN_TO_C_ANGLE) {
-				a_Tank.AutonUpdate(-0.5, -0.5);
+				a_Tank.AutonUpdate(-0.35, -0.35);
 			} else {
 				a_Tank.AutonUpdate(0, 0);
 				nextState = kDriveToC;
@@ -208,7 +215,7 @@ void SmokeyIX::AutonomousPeriodic()
 			break;
 	case kDriveToC:
 			if (tankDistance < TO_C_DISTANCE) {
-				a_Tank.AutonUpdate(-0.5, 0.5);
+				a_Tank.AutonUpdate(-0.35, 0.35);
 			} else {
 				a_Tank.AutonUpdate(0, 0);
 				nextState = kAutoIdle;
@@ -248,7 +255,7 @@ void SmokeyIX::TeleopPeriodic()
 	if(a_Joystick2.GetRawButton(1)) {
 		a_Shooter.Fire();
 	}
-	if(a_Joystick.GetRawButton(2)) {
+	if(a_Joystick2.GetRawButton(2)) {
 		a_Shooter.Stop();
 	}
 	a_Shooter.Update(a_Joystick);

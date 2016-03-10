@@ -21,6 +21,7 @@ public:
 	void SetTwistingAngle(float angle);
 	void SetTwistingRelAngle(float gyroAngle, float angle);
 	float GetDistance();
+	void ResetEncoders();
 
 private:
 	static const std::string CONTROL_TYPE_KEY;

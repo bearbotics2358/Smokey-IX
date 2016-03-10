@@ -11,7 +11,7 @@
 
 bool cockIt = true;
 bool fireIt = false;
-int cockValue = 3200;
+int cockValue = 1600;
 int uncockedValue = 1150;
 int oldValue = 0;
 
