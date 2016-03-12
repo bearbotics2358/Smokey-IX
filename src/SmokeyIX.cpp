@@ -117,11 +117,13 @@ void SmokeyIX::AutonomousPeriodic()
 	case kTurnToShootWait:
 		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kTurnToShoot;
+			a_Tank.SetTwistingMode();
+			a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), TURN_ANGLE - 10);
 		}
 		break;
 	case kTurnToShoot:
-		if (gyroValue < TURN_ANGLE - 15) {
-			a_Tank.AutonUpdate(-0.35, -0.35);
+		if (a_Tank.IsTwisting()) {
+			a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle());
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveTowardsTowerWait;
@@ -182,13 +184,15 @@ void SmokeyIX::AutonomousPeriodic()
 		shooterCurrent = a_Shooter.GetPosition();
 			if(shooterCurrent < shooterStart) {
 				nextState = kTurnBack;
+				a_Tank.SetTwistingMode();
+				a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), TURN_AROUND_ANGLE - 10);
 			} else {
 				a_Shooter.Fire();
 			}
 			break;
 	case kTurnBack:
-		if (gyroValue < TURN_AROUND_ANGLE) {
-			a_Tank.AutonUpdate(-0.35, -0.35);
+		if (a_Tank.IsTwisting()) {
+			a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle());
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kDriveToTurnPoint;
