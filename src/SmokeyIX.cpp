@@ -63,7 +63,7 @@ void SmokeyIX::AutonomousPeriodic()
 	SmartDashboard::PutNumber("Tank Distance", tankDistance);
 
 	const double LOW_BAR_DISTANCE = 77.0 - ROBOT_LENGTH;
-	const double LOW_BAR_CLEAR = 48.0 + ROBOT_LENGTH;
+	const double LOW_BAR_CLEAR = 44.0 + ROBOT_LENGTH;
 	const double TURN_SPOT_DISTANCE = 113.06 - ROBOT_PIVOT_POINT;
 	const double SHOOT_SPOT_DISTANCE = 130.9 - TOWER_DISTANCE;
 	const double TURN_ANGLE = 60.0; // theoretically 60 degrees
@@ -81,7 +81,7 @@ void SmokeyIX::AutonomousPeriodic()
 
 	a_Shooter.Update(a_Joystick);
 
-	printf("state %d\n", a_AutoState);
+	// printf("state %d\n", a_AutoState);
 
 	switch (a_AutoState) {
 	case kDropCollector:
@@ -94,20 +94,18 @@ void SmokeyIX::AutonomousPeriodic()
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveUnderLowBar;
-			a_Tank.ResetEncoders();
 		}
 		break;
 	case kMoveUnderLowBar:
-		if (tankDistance < LOW_BAR_CLEAR) {
+		if (tankDistance < LOW_BAR_CLEAR + LOW_BAR_DISTANCE) {
 			a_Tank.AutonUpdateDriveStraight(-0.35, 0.35); //change to a usable speed
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveToShoot;
-			a_Tank.ResetEncoders();
 		}
 		break;
 	case kMoveToShoot:
-		if (tankDistance < TURN_SPOT_DISTANCE) {
+		if (tankDistance < TURN_SPOT_DISTANCE + LOW_BAR_CLEAR + LOW_BAR_DISTANCE) {
 			a_Tank.AutonUpdateDriveStraight(-0.35, 0.35);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
@@ -134,6 +132,7 @@ void SmokeyIX::AutonomousPeriodic()
 	case kMoveTowardsTowerWait:
 		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kMoveTowardsTower;
+			a_Tank.ResetEncoders();
 		}
 		break;
 	case kMoveTowardsTower:
@@ -318,10 +317,16 @@ void SmokeyIX::TestInit()
 {
 	a_Compressor.SetClosedLoopControl(true);
 	a_LeftSol.Set(DoubleSolenoid::kForward);
+	a_Tank.Enable();
 }
 
 void SmokeyIX::TestPeriodic()
 {
+	a_Tank.AutonUpdateDriveStraightTest(-0.35, 0.35, a_Joystick);
+	return;
+
+
+
 	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle());
 
 	if(a_Joystick.GetRawButton(1)) {

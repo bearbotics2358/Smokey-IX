@@ -270,18 +270,18 @@ void Tank::AutonUpdate(double left, double right)
 	double rightDistance = fabs(a_RightSide.GetDistance());
 	SmartDashboard::PutNumber("left auto", leftDistance);
 	SmartDashboard::PutNumber("right auto", rightDistance);
-	double percentDifference = (leftDistance - rightDistance) * 0.1;
-	a_LeftSide.Set(left); //  + percentDifference);
-    a_RightSide.Set(1.09 * right); // - percentDifference);
+	a_LeftSide.Set(left);
+    a_RightSide.Set(1.09 * right);
 }
 
-void Tank::AutonUpdateDriveStraight(double left, double right)
+void Tank::AutonUpdateDriveStraightTest(double left, double right, Joystick &stick)
 {
 	double leftDistance = fabs(a_LeftSide.GetDistance());
 	double rightDistance = fabs(a_RightSide.GetDistance());
 	SmartDashboard::PutNumber("left auto", leftDistance);
 	SmartDashboard::PutNumber("right auto", rightDistance);
 	// difference in inches:
+	/*
 	double inchDifference = (leftDistance - rightDistance);
 	if(fabs(inchDifference) < 0.10) {
 		a_LeftSide.Set(left);
@@ -294,6 +294,42 @@ void Tank::AutonUpdateDriveStraight(double left, double right)
 		//turn left
 		a_LeftSide.Set(0.90 * left);
     a_RightSide.Set(1.10 * right);
+	}
+	*/
+	if(stick.GetRawButton(9)) {
+		a_LeftSide.Set(0.740 * left);
+		a_RightSide.Set(1.35 * right);
+		printf("driving to the left\n");
+	} else if(stick.GetRawButton(10)) {
+		a_LeftSide.Set(1.35 * left);
+		a_RightSide.Set(0.740 * right);
+		printf("driving to the right\n");
+	} else {
+		a_LeftSide.Set(left);
+		a_RightSide.Set(right);
+		printf("driving straight\n");
+	}
+}
+
+void Tank::AutonUpdateDriveStraight(double left, double right)
+{
+	double leftDistance = fabs(a_LeftSide.GetDistance());
+	double rightDistance = fabs(a_RightSide.GetDistance());
+	SmartDashboard::PutNumber("left auto", leftDistance);
+	SmartDashboard::PutNumber("right auto", rightDistance);
+	// difference in inches:
+	double inchDifference = (leftDistance - rightDistance);
+	if(fabs(inchDifference) < 0.10) {
+		a_LeftSide.Set(left);
+		a_RightSide.Set(right);
+	} else if(inchDifference < 0) {
+		// turn right
+		a_LeftSide.Set(1.5 * left);
+		a_RightSide.Set(0.667 * right);
+	} else {
+		//turn left
+		a_LeftSide.Set(0.667 * left);
+		a_RightSide.Set(1.5 * right);
 	}
 }
 

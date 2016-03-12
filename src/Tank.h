@@ -16,6 +16,7 @@ public:
 
 	void Update(Joystick &stick, Joystick &stick2, float gyroValue);
 	void AutonUpdate(double left, double right);
+	void AutonUpdateDriveStraightTest(double left, double right, Joystick &stick);
 	void AutonUpdateDriveStraight(double left, double right);
 	void SimpleUpdate(Joystick &stick, Joystick &stick2);
 	void SetTwistingMode();
