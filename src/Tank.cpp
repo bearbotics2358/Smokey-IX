@@ -270,7 +270,7 @@ void Tank::AutonUpdate(double left, double right)
 	double rightDistance = fabs(a_RightSide.GetDistance());
 	SmartDashboard::PutNumber("left auto", leftDistance);
 	SmartDashboard::PutNumber("right auto", rightDistance);
-	double percentDifference = (leftDistance - rightDistance) * TANK_CONVERSION_FACTOR * 0.1;
+	double percentDifference = (leftDistance - rightDistance) * 0.1;
 	a_LeftSide.Set(left); //  + percentDifference);
     a_RightSide.Set(1.09 * right); // - percentDifference);
 }
@@ -282,7 +282,7 @@ void Tank::AutonUpdateDriveStraight(double left, double right)
 	SmartDashboard::PutNumber("left auto", leftDistance);
 	SmartDashboard::PutNumber("right auto", rightDistance);
 	// difference in inches:
-	double inchDifference = (leftDistance - rightDistance) * TANK_CONVERSION_FACTOR * 0.1;
+	double inchDifference = (leftDistance - rightDistance);
 	if(fabs(inchDifference) < 0.10) {
 		a_LeftSide.Set(left);
     a_RightSide.Set(right);

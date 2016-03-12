@@ -1,4 +1,5 @@
 #include <ShifterController.h>
+#include "Prefs.h"
 #include "LiveWindow/LiveWindow.h"
 
 ShifterController::ShifterController(uint32_t leftMotor, uint32_t rightMotor,
@@ -119,7 +120,8 @@ float ShifterController::Get()
 
 float ShifterController::GetDistance()
 {
-	return _encoder.GetRaw();
+	// return distance in inches
+	return _encoder.GetRaw() * TANK_CONVERSION_FACTOR;
 }
 
 float ShifterController::GetRate()
@@ -142,4 +144,9 @@ void ShifterController::PIDWrite(float output)
 	_rightMotor.Set(output);
 	_leftMotor.Set(output);
 	_speed = output;
+}
+
+void ShifterController::SetEncoderReverseDirection(bool b1)
+{
+	_encoder.SetReverseDirection(b1);
 }

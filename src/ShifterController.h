@@ -27,6 +27,7 @@ public:
 	void Shift(int state);
 	void ShiftLow();
 	void ShiftHigh();
+	void SetEncoderReverseDirection(bool b1);
 
 	float GetDistance();
 	float GetRate();

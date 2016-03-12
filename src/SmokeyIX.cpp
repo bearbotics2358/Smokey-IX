@@ -24,6 +24,8 @@ SmokeyIX::SmokeyIX(void):
 		a_AutoState(kAutoIdle)
 		// a_TargetDetector("10.23.58.11")
 {
+	// left encoder is running backwards
+	a_Left.SetEncoderReverseDirection(true);
 	tState = 0;
 	shooterStart = -99;
 	shooterCurrent = 1000000000;
@@ -45,7 +47,7 @@ void SmokeyIX::DisabledInit()
 void SmokeyIX::AutonomousInit()
 {
 	a_Gyro.Cal();
-	a_AutoState = kMoveUnderLowBar;
+	a_AutoState = kDropCollector;
 	a_Tank.Enable();
 	a_Collector.Init();
 	a_Left.ResetEncoder();
@@ -57,7 +59,7 @@ void SmokeyIX::AutonomousPeriodic()
 {
 	AutoState nextState = a_AutoState;
 
-	float tankDistance = a_Tank.GetDistance() * TANK_CONVERSION_FACTOR;
+	float tankDistance = a_Tank.GetDistance(); // getDistance() already converts to inches
 	SmartDashboard::PutNumber("Tank Distance", tankDistance);
 
 	const double LOW_BAR_DISTANCE = 77.0 - ROBOT_LENGTH;
@@ -83,34 +85,34 @@ void SmokeyIX::AutonomousPeriodic()
 
 	switch (a_AutoState) {
 	case kDropCollector:
-		a_Collector.Set(0.0);
+		a_Collector.SetAngle(0);
 		nextState = kMoveToLowBar;
 		break;
 	case kMoveToLowBar:
 		if (tankDistance < LOW_BAR_DISTANCE) {
-			a_Tank.AutonUpdate(-0.35, 0.35);
+			a_Tank.AutonUpdateDriveStraight(-0.35, 0.35);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveUnderLowBar;
-			tankDistance = 0.0;
+			a_Tank.ResetEncoders();
 		}
 		break;
 	case kMoveUnderLowBar:
 		if (tankDistance < LOW_BAR_CLEAR) {
-			a_Tank.AutonUpdate(-0.35, 0.35); //change to a usable speed
+			a_Tank.AutonUpdateDriveStraight(-0.35, 0.35); //change to a usable speed
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveToShoot;
-			tankDistance = 0.0;
+			a_Tank.ResetEncoders();
 		}
 		break;
 	case kMoveToShoot:
-		if (tankDistance < TURN_SPOT_DISTANCE + 18) {
-			a_Tank.AutonUpdate(-0.35, 0.35);
+		if (tankDistance < TURN_SPOT_DISTANCE) {
+			a_Tank.AutonUpdateDriveStraight(-0.35, 0.35);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kTurnToShootWait;
-			tankDistance = 0.0;
+			a_Tank.ResetEncoders();
 			tState = Timer::GetFPGATimestamp();
 		}
 		break;
@@ -125,7 +127,6 @@ void SmokeyIX::AutonomousPeriodic()
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveTowardsTowerWait;
-			tankDistance = 0.0;
 			a_Tank.ResetEncoders();
 			tState = Timer::GetFPGATimestamp();
 		}
@@ -136,26 +137,26 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kMoveTowardsTower:
-		if (tankDistance < 12) {
-			a_Tank.AutonUpdate(-0.35, 0.35);
+		if (tankDistance < SHOOT_SPOT_DISTANCE) {
+			a_Tank.AutonUpdateDriveStraight(-0.35, 0.35);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kLoadingBot;
-			tankDistance = 0.0;
+			a_Tank.ResetEncoders();
 		}
 		break;
 	case kLoadingBot:
 			a_Collector.SetAngle(90.0);
 			if( fabs(a_Collector.GetAngle() - 90.0) < 3) {
 				nextState = kLoaderDown;
-				tankDistance = 0.0;
+				a_Tank.ResetEncoders();
 			}
 		break;
 	case kLoaderDown:
 		a_Collector.SetAngle(0);
 		if( fabs(a_Collector.GetAngle()) < 3) {
 			nextState = kCheckAim;
-			tankDistance = 0.0;
+			a_Tank.ResetEncoders();
 		}
 		break;
 	case kCheckAim:
@@ -176,7 +177,7 @@ void SmokeyIX::AutonomousPeriodic()
 	case kShoot:
 		a_Shooter.Fire(); // unsure if cock function needs to be called // it doesn't, don't worry
 		nextState = kTurnWait;
-		tankDistance = 0.0;
+		a_Tank.ResetEncoders();
 		break;
 	case kTurnWait:
 		shooterCurrent = a_Shooter.GetPosition();
@@ -192,7 +193,7 @@ void SmokeyIX::AutonomousPeriodic()
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kDriveToTurnPoint;
-			tankDistance = 0.0;
+			a_Tank.ResetEncoders();
 		}
 		break;
 	case kDriveToTurnPoint:
@@ -201,7 +202,7 @@ void SmokeyIX::AutonomousPeriodic()
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kTurnToC;
-			tankDistance = 0.0;
+			a_Tank.ResetEncoders();
 		}
 		break;
 	case kTurnToC:
@@ -210,7 +211,7 @@ void SmokeyIX::AutonomousPeriodic()
 			} else {
 				a_Tank.AutonUpdate(0, 0);
 				nextState = kDriveToC;
-				tankDistance = 0.0;
+				a_Tank.ResetEncoders();
 			}
 			break;
 	case kDriveToC:
@@ -219,12 +220,12 @@ void SmokeyIX::AutonomousPeriodic()
 			} else {
 				a_Tank.AutonUpdate(0, 0);
 				nextState = kAutoIdle;
-				tankDistance = 0.0;
+				a_Tank.ResetEncoders();
 			}
 			break;
 	case kAutoIdle:
 		a_Tank.AutonUpdate(0, 0);
-		tankDistance = 0.0;
+		a_Tank.ResetEncoders();
 		break;
 	}
 
@@ -235,6 +236,8 @@ void SmokeyIX::AutonomousPeriodic()
 void SmokeyIX::TeleopInit()
 {
 	a_Gyro.Cal();
+	a_Left.ResetEncoder();
+	a_Right.ResetEncoder();
 	a_Tank.Enable(); // Don't add mysterious methods in that we haven't tested, alexander
 	a_Left.DisablePIDControl();
 	a_Right.DisablePIDControl();
