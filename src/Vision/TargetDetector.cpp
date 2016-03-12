@@ -35,16 +35,46 @@ double TargetDetector::GetDistanceToTarget(ShapeReport &shape) {
 	// M1013_IMG_H        - height of picture in pixels
 	// VISION_TARGET_H_IN - height of vision target in inches
 
-	// Height of target in pixels
-	double targetHeight = shape.coordinates.height;
+	// using center of image as (0,0) // + up and right
+	double imgVertSizePx;
+	double imgVertPosPX;
+	double imgVertPosIn;
+	double projImgAngle;
+	double projDistanceBase;
+	double projDistanceBaseExtra;
+	double distanceHyp;
+	double distanceBase;
+	double inPerPx;
+
+	// step 2
+	imgVertSizePx = shape.coordinates.height;
+	imgVertPosPX = (0.5 * M1013_IMG_H) - shape.centroid.y;
+	inPerPx = PROJ_IMG_HEIGHT / imgVertSizePx;
+	imgVertPosIn = inPerPx * imgVertPosPX;
+
+	// step 3
+	projImgAngle = imgVertPosPX / M1013_IMG_H  * M1013_VFOV_DEG;
+	projDistanceBase = 1 / tan(projImgAngle) * imgVertPosIn;
+
+	// step 4
+	projDistanceBaseExtra = tan(CAM_VERT_ANGLE) * imgVertPosIn;
+	distanceHyp = projDistanceBase - projDistanceBaseExtra;
+
+	// step 5
+	distanceBase = cos(CAM_VERT_ANGLE) * distanceHyp;
 
 	// Old math
 	// double distanceToTarget = cot((M1013_VFOV_DEG/M1013_IMG_H)*targetHeight)*VISION_TARGET_H_IN;
 
+	// Old math 2.0
+	/*
 	double distanceToTarget	= (VISION_TARGET_H_IN*sin((180-(90-M1013_VFOV_DEG))-(M1013_VFOV_DEG/M1013_IMG_H*targetHeight)))
 							   /sin(M1013_VFOV_DEG/M1013_IMG_H*targetHeight);
+	*/
 
-	return distanceToTarget;
+
+
+	return distanceBase;
 }
 
 void TargetDetector::SaveImage(string name, Image *img) {

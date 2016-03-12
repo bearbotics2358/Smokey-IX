@@ -24,6 +24,10 @@ private:
 	static constexpr float VISION_TARGET_H_IN = 12.0;
 	static constexpr float M1013_IMG_W = 640.0;
 	static constexpr float M1013_IMG_H = 480.0;
+	// angle of camera
+	static constexpr float CAM_VERT_ANGLE = 24.5;
+	// step 1
+	static constexpr float PROJ_IMG_HEIGHT = cos(CAM_VERT_ANGLE) * VISION_TARGET_H_IN;
 
 	static void CheckIMAQError(int rval, std::string desc);
 
