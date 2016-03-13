@@ -20,6 +20,7 @@ public:
 	void AutonUpdateDriveStraight(double left, double right);
 	void SimpleUpdate(Joystick &stick, Joystick &stick2);
 	void SetTwistingMode();
+	void DisableTwist();
 	void SetTwistingAngle(float angle);
 	void SetTwistingRelAngle(float gyroAngle, float angle);
 	float GetDistance();

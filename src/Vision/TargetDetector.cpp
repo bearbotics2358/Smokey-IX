@@ -7,7 +7,7 @@ typedef unique_ptr<Image, decltype(&imaqDispose)> UniqueImgPtr;
 typedef unique_ptr<ShapeReport, decltype(&imaqDispose)> ShapeReportPtr;
 
 TargetDetector::TargetDetector(string ip):
-		a_DebugMode(true), a_Processing(false),
+		a_DebugMode(false), a_Processing(false),
 		a_ImageCaptureTask(&TargetDetector::ImageCaptureTask, this),
 		a_ImageProcessingTask(&TargetDetector::ImageProcessingTask, this),
 		a_Camera(ip) {
@@ -29,15 +29,18 @@ void TargetDetector::CheckIMAQError(int rval, string desc) {
 	}
 }
 
-double TargetDetector::GetDistanceToTarget(ShapeReport &shape) {
+void TargetDetector::GetTargetError(ShapeReport &shape, double &distance, double &angle) {
 	// Available constants:
 	// M1013_VFOV_DEG     - vertical FOV of camera
 	// M1013_IMG_H        - height of picture in pixels
 	// VISION_TARGET_H_IN - height of vision target in inches
 
+	// M1013_HFOV_DEG	  - horizontal FOV of camera
+	// M1013_IMG_W 		  - width of pictures in pixels
+
 	// using center of image as (0,0) // + up and right
 	double imgVertSizePx;
-	double imgVertPosPX;
+	double imgVertPosPx;
 	double imgVertPosIn;
 	double projImgAngle;
 	double projDistanceBase;
@@ -46,14 +49,17 @@ double TargetDetector::GetDistanceToTarget(ShapeReport &shape) {
 	double distanceBase;
 	double inPerPx;
 
+	double imgHorizPosPx;
+
+
 	// step 2
 	imgVertSizePx = shape.coordinates.height;
-	imgVertPosPX = (0.5 * M1013_IMG_H) - shape.centroid.y;
+	imgVertPosPx = (0.5 * M1013_IMG_H) - shape.centroid.y;
 	inPerPx = PROJ_IMG_HEIGHT / imgVertSizePx;
-	imgVertPosIn = inPerPx * imgVertPosPX;
+	imgVertPosIn = inPerPx * imgVertPosPx;
 
 	// step 3
-	projImgAngle = imgVertPosPX / M1013_IMG_H  * M1013_VFOV_DEG;
+	projImgAngle = imgVertPosPx / M1013_IMG_H  * M1013_VFOV_DEG;
 	projDistanceBase = 1 / tan(projImgAngle) * imgVertPosIn;
 
 	// step 4
@@ -72,9 +78,16 @@ double TargetDetector::GetDistanceToTarget(ShapeReport &shape) {
 							   /sin(M1013_VFOV_DEG/M1013_IMG_H*targetHeight);
 	*/
 
+	// SmartDashboard::PutNumber("Distance form Target",distanceBase);
+
+	distance = distanceBase;
+
+	// horizontal angle adjustment
+	imgHorizPosPx = shape.centroid.x - 450.0;
+	angle = M1013_HFOV_DEG * imgHorizPosPx / M1013_IMG_W;
+	// SmartDashboard::PutNumber("Angle to Adjust",angle);
 
 
-	return distanceBase;
 }
 
 void TargetDetector::SaveImage(string name, Image *img) {
@@ -107,6 +120,7 @@ bool TargetDetector::GetDebugMode() {
 }
 
 void TargetDetector::StartProcessing() {
+	a_LightRing.SetColor(0, 0, 0, 255);
 	a_Processing = true;
 }
 
@@ -116,6 +130,18 @@ void TargetDetector::StopProcessing() {
 
 bool TargetDetector::IsProcessing() {
 	return a_Processing;
+}
+
+bool TargetDetector::CanSeeTarget() {
+	return a_CanSeeTarget;
+}
+
+double TargetDetector::GetDistanceToTarget() {
+	return a_DistanceToTarget;
+}
+
+double TargetDetector::GetAngleToTarget() {
+	return a_AngleToTarget;
 }
 
 ImageFilter::Ptr TargetDetector::AppendProcessingChain(ImageSource::Ptr src) {
@@ -150,9 +176,9 @@ void TargetDetector::ImageProcessingTask() {
 	}
 
 	// HSL ranges for the color threshold operation
-	Range hueRange { 150, 200 }; // Extract blue
-	Range satRange { 0,   198 };
-	Range valRange { 0,   255 };
+	Range hueRange { 120,   170 }; // Extract blue
+	Range satRange { 180,   255 };
+	Range valRange { 150,   255 };
 
 	// Target template image
 	UniqueImgPtr targetTemplate(imaqCreateImage(IMAQ_IMAGE_U8, 7), imaqDispose);
@@ -242,7 +268,7 @@ void TargetDetector::ImageProcessingTask() {
 
 			// Extract blueish pixels
 			CheckIMAQError(
-					imaqColorThreshold(curMonoImage.get(), curImage.get(), 1, IMAQ_HSL,
+					imaqColorThreshold(curMonoImage.get(), curImage.get(), 1, IMAQ_HSV,
 							&hueRange, &satRange, &valRange),
 					"imaqColorThreshold");
 			SaveImage("02-threshold", curMonoImage.get());
@@ -253,17 +279,31 @@ void TargetDetector::ImageProcessingTask() {
 						"imaqDuplicate");
 			}
 
+			int kernel[9] = {0,1,0,1,1,1,0,1,0};
+			StructuringElement element;
+			element.matrixCols = 3;
+			element.matrixRows = 3;
+			element.hexa = FALSE;
+			element.kernel = kernel;
+			CheckIMAQError(
+					imaqMorphology(curMonoImage.get(), curMonoImage.get(), IMAQ_ERODE, &element),
+					"imaqMorphology(erode)");
+			CheckIMAQError(
+					imaqMorphology(curMonoImage.get(), curMonoImage.get(), IMAQ_DILATE, &element),
+					"imaqMorphology(dilate)");
+
 			// Filters particles based on their size
 			CheckIMAQError(
 					imaqSizeFilter(curMonoImage.get(), curMonoImage.get(), TRUE, 3, IMAQ_KEEP_LARGE, &structElem),
 					"imaqSizeFilter");
 			SaveImage("04-remove-small-particles", curMonoImage.get());
 
-			// Fill holes
+			/* Fill holes
 			CheckIMAQError(
 					imaqFillHoles(curMonoImage.get(), curMonoImage.get(), TRUE),
 					"imaqFillHoles");
 			SaveImage("05-fill-holes", curMonoImage.get());
+			*/
 
 			ShapeReportPtr shapeReport(
 					imaqMatchShape(curMonoImage.get(), curMonoImage.get(), targetTemplate.get(),
@@ -275,12 +315,24 @@ void TargetDetector::ImageProcessingTask() {
 
 			// Stop the clock and display the processing time
 			end = GetFPGATime();
-			SmartDashboard::PutNumber("Image Processing Time", (end-start));
+			SmartDashboard::PutNumber("Image Processing Time", (end-start)/1000000.0);
 
-			if (a_DebugMode) {
-				for (int i = 0; i < targetMatchesFound; i++) {
-					ShapeReport shape = shapeReport.get()[i];
-					if (shape.score >= 500.0) {
+			SmartDashboard::PutNumber("Matches Found", targetMatchesFound);
+
+			int maxShapeScore = 0;
+			int maxShapeIndex = 0;
+			int numValidTargets = 0;
+			for (int i = 0; i < targetMatchesFound; i++) {
+				ShapeReport shape = shapeReport.get()[i];
+				if (shape.score >= MIN_TARGET_SCORE) {
+					numValidTargets += 1;
+
+					if (shape.score > maxShapeScore) {
+						maxShapeScore = shape.score;
+						maxShapeIndex = i;
+					}
+
+					if (a_DebugMode) {
 						cout	<< "# Match " << i << endl
 								<< "- score: " << shape.score << endl
 								<< "- center: (" << shape.centroid.x << ", " << shape.centroid.y << ")" << endl
@@ -291,6 +343,23 @@ void TargetDetector::ImageProcessingTask() {
 								IMAQ_DRAW_VALUE, IMAQ_SHAPE_RECT, 255.0);
 					}
 				}
+			}
+
+			cout << "numValidTargets: " << numValidTargets << endl;
+
+			if (numValidTargets > 0) {
+				a_CanSeeTarget = true;
+
+				double distance, angle;
+				GetTargetError(shapeReport.get()[maxShapeIndex], distance, angle);
+				a_DistanceToTarget = distance;
+				a_AngleToTarget = angle;
+				cout << "angle to target: " << angle << endl;
+			} else {
+				a_CanSeeTarget = false;
+			}
+
+			if (a_DebugMode) {
 				SaveImage("debug-output", debugImage.get());
 			}
 		} catch (runtime_error &ex) {

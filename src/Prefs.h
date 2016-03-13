@@ -54,7 +54,7 @@
 
 #define ROBOT_LENGTH 31.0 // This is in inches
 #define ROBOT_PIVOT_POINT 6.5 //From back of frame in inches
-#define TOWER_DISTANCE 104 //distance from face of tower when shooting
+#define TOWER_DISTANCE 109.5 //distance from face of tower when shooting
 
 // tank conversion factor doesn't work, ending part to make it work
 #define TANK_CONVERSION_FACTOR ((3.2 * 3.14159265) / 1000.0 * (145.0 / 85.0))

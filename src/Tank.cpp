@@ -39,13 +39,13 @@ Tank::~Tank()
 
 void Tank::Init()
 {
-	a_ControlTypeChooser.AddDefault(CONTROL_TYPE_TANK_TWO_JOYSTICKS_KEY,
+	a_ControlTypeChooser.AddObject(CONTROL_TYPE_TANK_TWO_JOYSTICKS_KEY,
 									(void *)&CONTROL_TYPE_TANK_TWO_JOYSTICKS);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_TANK_GAMEPAD_KEY,
 									(void *)&CONTROL_TYPE_TANK_GAMEPAD);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_ARCADE_ONE_JOYSTICK_KEY,
 									(void *)&CONTROL_TYPE_ARCADE_ONE_JOYSTICK);
-	a_ControlTypeChooser.AddObject(CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK_KEY,
+	a_ControlTypeChooser.AddDefault(CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK_KEY,
 									(void *)&CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK);
 	a_ControlTypeChooser.AddObject(CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS_KEY,
 									(void *)&CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS);
@@ -158,7 +158,7 @@ void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 		right *= -1.0;
 		break;
 	case CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK:
-		EtherArcade(stick2.GetRawAxis(1), stick2.GetRawAxis(0) * -1.0, a, b, left, right);
+		EtherArcade(pow(stick2.GetRawAxis(1), 3), pow(stick2.GetRawAxis(0), 3) * -1.0, a, b, left, right);
 		right *= -1.0;
 		break;
 	case CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS:
@@ -297,6 +297,11 @@ void Tank::SimpleUpdate(Joystick &stick, Joystick &stick2)
 void Tank::SetTwistingMode()
 {
 	isTwisting = 1;
+}
+
+void Tank::DisableTwist()
+{
+	isTwisting = 0;
 }
 
 void Tank::SetTwistingAngle(float angle)

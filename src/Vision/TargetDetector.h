@@ -18,6 +18,10 @@ public:
 	void StopProcessing();
 	bool IsProcessing();
 
+	bool CanSeeTarget();
+	double GetDistanceToTarget();
+	double GetAngleToTarget();
+
 private:
 	static constexpr float M1013_HFOV_DEG = 67.0;
 	static constexpr float M1013_VFOV_DEG = 49.3;
@@ -29,9 +33,11 @@ private:
 	// step 1
 	static constexpr float PROJ_IMG_HEIGHT = cos(CAM_VERT_ANGLE) * VISION_TARGET_H_IN;
 
+	static constexpr float MIN_TARGET_SCORE = 350.0;
+
 	static void CheckIMAQError(int rval, std::string desc);
 
-	static double GetDistanceToTarget(ShapeReport &shape);
+	static void GetTargetError(ShapeReport &shape, double &distance, double &angle);
 
 	void SaveImage(std::string path, Image *img);
 	void ImageCaptureTask();
@@ -50,4 +56,9 @@ private:
 
 	std::mutex a_ImageMutex;
 	HSLImage a_Image;
+
+	// Current measurement results
+	std::atomic_bool a_CanSeeTarget;
+	std::atomic<double> a_DistanceToTarget;
+	std::atomic<double> a_AngleToTarget;
 };

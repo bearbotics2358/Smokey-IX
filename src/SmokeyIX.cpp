@@ -21,8 +21,8 @@ SmokeyIX::SmokeyIX(void):
 		a_Left(BACK_LEFT_ONE, BACK_LEFT_TWO, a_LeftSol, LEFT_ENCODER_PORT_A, LEFT_ENCODER_PORT_B),
 		a_Right(BACK_RIGHT_ONE, BACK_RIGHT_TWO, a_LeftSol, RIGHT_ENCODER_PORT_A, RIGHT_ENCODER_PORT_B),
 		a_Tank(a_Left,a_Right),
-		a_AutoState(kAutoIdle)
-		// a_TargetDetector("10.23.58.11")
+		a_AutoState(kAutoIdle),
+		a_TargetDetector("10.23.58.11")
 {
 	// left encoder is running backwards
 	a_Left.SetEncoderReverseDirection(true);
@@ -41,7 +41,7 @@ void SmokeyIX::RobotInit()
 void SmokeyIX::DisabledInit()
 {
 	a_Tank.Disable();
-	// a_TargetDetector.StopProcessing();
+	a_TargetDetector.StopProcessing();
 }
 
 void SmokeyIX::AutonomousInit()
@@ -53,6 +53,7 @@ void SmokeyIX::AutonomousInit()
 	a_Left.ResetEncoder();
 	a_Right.ResetEncoder();
 	tState = 0;
+	a_TargetDetector.StartProcessing();
 }
 
 void SmokeyIX::AutonomousPeriodic()
@@ -62,11 +63,12 @@ void SmokeyIX::AutonomousPeriodic()
 	float tankDistance = a_Tank.GetDistance(); // getDistance() already converts to inches
 	SmartDashboard::PutNumber("Tank Distance", tankDistance);
 
-	const double LOW_BAR_DISTANCE = 77.0 - ROBOT_LENGTH;
+	const double LOW_BAR_DISTANCE = 77.0 - ROBOT_LENGTH - 23; // -23 for extra swag and drift control
 	const double LOW_BAR_CLEAR = 44.0 + ROBOT_LENGTH;
 	const double TURN_SPOT_DISTANCE = 113.06 - ROBOT_PIVOT_POINT;
 	const double SHOOT_SPOT_DISTANCE = 130.9 - TOWER_DISTANCE;
 	const double TURN_ANGLE = 60.0; // theoretically 60 degrees
+	// float adjustAngle;
 	const double TURN_AROUND_ANGLE =  TURN_ANGLE + (180 * M_1_PI) * asin(48.0/(sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216)));
 	const double C_DISTANCE = (sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216));
 	const double TURN_TO_C_ANGLE = 180.0; // check all these angles when testing
@@ -147,30 +149,56 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kLoadingBot:
-			a_Collector.SetAngle(90.0);
-			if( fabs(a_Collector.GetAngle() - 90.0) < 3) {
+			a_Collector.SetAngle(120.0);
+			if( fabs(a_Collector.GetAngle() - 120.0) < 3) {
 				nextState = kLoaderDown;
 				a_Tank.ResetEncoders();
+				tState = Timer::GetFPGATimestamp();
 			}
+		break;
+	case kLoaderDownWait:
+		if(Timer::GetFPGATimestamp() >= tState + 0.5) {
+			nextState = kLoaderDown;
+			a_Tank.ResetEncoders();
+		}
 		break;
 	case kLoaderDown:
 		a_Collector.SetAngle(0);
 		if( fabs(a_Collector.GetAngle()) < 3) {
+			nextState = kCheckAimWait;
+			a_Tank.ResetEncoders();
+			tState = Timer::GetFPGATimestamp();
+		}
+		break;
+	case kCheckAimWait:
+		if(Timer::GetFPGATimestamp() >= tState + 1.2) {
 			nextState = kCheckAim;
 			a_Tank.ResetEncoders();
 		}
 		break;
 	case kCheckAim:
-		// insert vision code here
+		a_Tank.SetTwistingMode();
+		if(a_TargetDetector.CanSeeTarget()) {
+			a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), a_TargetDetector.GetAngleToTarget());
+			printf("attempting to turn to %f\n", a_TargetDetector.GetAngleToTarget());
+		} else {
+			a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), 0);
+			printf("no target. woohoo.\n");
+		}
+
 		nextState = kAdjust;
 		break;
 	case kAdjust:
-		// more vision code here- let's talk to Alexander!
-		nextState = kShootWait;
-		tState = Timer::GetFPGATimestamp();
+		if(a_Tank.IsTwisting()) {
+			a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle());
+		} else {
+			nextState = kShootWait;
+			tState = Timer::GetFPGATimestamp();
+		}
+
 		break;
 	case kShootWait:
-		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
+		if(Timer::GetFPGATimestamp() >= tState + 2.0) {
 			nextState = kShoot;
 			shooterStart = a_Shooter.GetPosition();
 		}
@@ -183,7 +211,7 @@ void SmokeyIX::AutonomousPeriodic()
 	case kTurnWait:
 		shooterCurrent = a_Shooter.GetPosition();
 			if(shooterCurrent < shooterStart) {
-				nextState = kTurnBack;
+				nextState = kAutoIdle;
 				a_Tank.SetTwistingMode();
 				a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), TURN_AROUND_ANGLE - 10);
 			} else {
@@ -201,16 +229,18 @@ void SmokeyIX::AutonomousPeriodic()
 		break;
 	case kDriveToTurnPoint:
 		if (tankDistance < C_DISTANCE) {
-			a_Tank.AutonUpdate(-0.35, 0.35);
+			a_Tank.AutonUpdateDriveStraight(-0.35, 0.35);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kTurnToC;
 			a_Tank.ResetEncoders();
+			a_Tank.SetTwistingMode();
+			a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), TURN_TO_C_ANGLE - 10);
 		}
 		break;
 	case kTurnToC:
-			if (gyroValue < TURN_TO_C_ANGLE) {
-				a_Tank.AutonUpdate(-0.35, -0.35);
+			if (a_Tank.IsTwisting()) {
+				a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle());
 			} else {
 				a_Tank.AutonUpdate(0, 0);
 				nextState = kDriveToC;
@@ -219,7 +249,7 @@ void SmokeyIX::AutonomousPeriodic()
 			break;
 	case kDriveToC:
 			if (tankDistance < TO_C_DISTANCE) {
-				a_Tank.AutonUpdate(-0.35, 0.35);
+				a_Tank.AutonUpdateDriveStraight(-0.35, 0.35);
 			} else {
 				a_Tank.AutonUpdate(0, 0);
 				nextState = kAutoIdle;
@@ -245,16 +275,21 @@ void SmokeyIX::TeleopInit()
 	a_Left.DisablePIDControl();
 	a_Right.DisablePIDControl();
 	a_Collector.Init();
-	// a_TargetDetector.StartProcessing();
+	a_TargetDetector.StartProcessing();
 }
 
 void SmokeyIX::TeleopPeriodic()
 {
+	double angleToTarget = a_TargetDetector.GetAngleToTarget();
+	SmartDashboard::PutNumber("Angle to Target", angleToTarget);
+
 	a_Gyro.Update();
-	if(a_Joystick2.GetRawButton(6)) {
+	if(a_Joystick2.GetRawButton(6) && a_TargetDetector.CanSeeTarget()) {
+
 		a_Tank.SetTwistingMode();
-		a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), 30);
+		a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), angleToTarget);
 	}
+
 	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle());
 
 
@@ -322,6 +357,7 @@ void SmokeyIX::TestInit()
 	a_Compressor.SetClosedLoopControl(true);
 	a_LeftSol.Set(DoubleSolenoid::kForward);
 	a_Tank.Enable();
+	a_Tank.DisableTwist();
 }
 
 void SmokeyIX::TestPeriodic()

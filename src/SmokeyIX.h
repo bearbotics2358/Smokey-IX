@@ -28,7 +28,9 @@ enum AutoState {
 	kMoveTowardsTowerWait,
 	// kLoadingBotWait,
 	kLoadingBot,
+	kLoaderDownWait,
 	kLoaderDown,
+	kCheckAimWait,
 	kCheckAim,
 	kAdjust,
 	kShootWait,
@@ -89,9 +91,7 @@ private:
 	int shooterCurrent;
 	int shooterStart;
 
-
-
-	// TargetDetector a_TargetDetector;
+	TargetDetector a_TargetDetector;
 };
 
 #endif /* SRC_SMOKEYIX_H_ */
