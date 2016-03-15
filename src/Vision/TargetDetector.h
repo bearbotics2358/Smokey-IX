@@ -33,7 +33,7 @@ private:
 	// step 1
 	static constexpr float PROJ_IMG_HEIGHT = cos(CAM_VERT_ANGLE) * VISION_TARGET_H_IN;
 
-	static constexpr float MIN_TARGET_SCORE = 350.0;
+	static constexpr float MIN_TARGET_SCORE = 250.0;
 
 	static void CheckIMAQError(int rval, std::string desc);
 

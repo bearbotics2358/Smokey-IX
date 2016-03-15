@@ -5,6 +5,7 @@
  *      Author: hstechclub
  */
 
+#include <SerialPort.h>
 #include "ShifterController.h"
 #include "Tank.h"
 #include "JrimmyGyro.h"
@@ -92,6 +93,10 @@ private:
 	int shooterStart;
 
 	TargetDetector a_TargetDetector;
+
+	float angleToT;
+
+	// SerialPort a_Leonardo;
 };
 
 #endif /* SRC_SMOKEYIX_H_ */

@@ -23,12 +23,16 @@ SmokeyIX::SmokeyIX(void):
 		a_Tank(a_Left,a_Right),
 		a_AutoState(kAutoIdle),
 		a_TargetDetector("10.23.58.11")
+		// a_Leonardo(BAUD_RATE, SerialPort::kUSB, DATA_BITS, SerialPort::kParity_None, SerialPort::kStopBits_One)
 {
 	// left encoder is running backwards
 	a_Left.SetEncoderReverseDirection(true);
 	tState = 0;
 	shooterStart = -99;
 	shooterCurrent = 1000000000;
+	angleToT = 0;
+	// a_Leonardo.Reset();
+	// a_Leonardo.Write("B", 1);
 }
 
 void SmokeyIX::RobotInit()
@@ -120,7 +124,7 @@ void SmokeyIX::AutonomousPeriodic()
 		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kTurnToShoot;
 			a_Tank.SetTwistingMode();
-			a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), TURN_ANGLE - 10);
+			a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), TURN_ANGLE - 10); // Need to turn further in manual mode- 5 maybe? I think that is right
 		}
 		break;
 	case kTurnToShoot:
@@ -151,7 +155,7 @@ void SmokeyIX::AutonomousPeriodic()
 	case kLoadingBot:
 			a_Collector.SetAngle(120.0);
 			if( fabs(a_Collector.GetAngle() - 120.0) < 3) {
-				nextState = kLoaderDown;
+				nextState = kLoaderDownWait;
 				a_Tank.ResetEncoders();
 				tState = Timer::GetFPGATimestamp();
 			}
@@ -165,7 +169,7 @@ void SmokeyIX::AutonomousPeriodic()
 	case kLoaderDown:
 		a_Collector.SetAngle(0);
 		if( fabs(a_Collector.GetAngle()) < 3) {
-			nextState = kCheckAimWait;
+			nextState = kShootWait;
 			a_Tank.ResetEncoders();
 			tState = Timer::GetFPGATimestamp();
 		}
@@ -178,8 +182,19 @@ void SmokeyIX::AutonomousPeriodic()
 		break;
 	case kCheckAim:
 		a_Tank.SetTwistingMode();
-		if(a_TargetDetector.CanSeeTarget()) {
-			a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), a_TargetDetector.GetAngleToTarget());
+
+		angleToT = a_TargetDetector.GetAngleToTarget();
+		if(fabs(angleToT > 15)) {
+			nextState = kShootWait;
+			tState = Timer::GetFPGATimestamp();
+			break;
+		}
+
+		if(a_TargetDetector.CanSeeTarget() && angleToT >= 0) {
+			a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), a_TargetDetector.GetAngleToTarget() + 3);
+			printf("attempting to turn to %f\n", a_TargetDetector.GetAngleToTarget());
+		} else if(a_TargetDetector.CanSeeTarget() && angleToT < 0) {
+			a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), a_TargetDetector.GetAngleToTarget() - 3);
 			printf("attempting to turn to %f\n", a_TargetDetector.GetAngleToTarget());
 		} else {
 			a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), 0);
@@ -276,6 +291,7 @@ void SmokeyIX::TeleopInit()
 	a_Right.DisablePIDControl();
 	a_Collector.Init();
 	a_TargetDetector.StartProcessing();
+	a_Tank.DisableTwist();
 }
 
 void SmokeyIX::TeleopPeriodic()
@@ -341,6 +357,14 @@ void SmokeyIX::TeleopPeriodic()
 	SmartDashboard::PutNumber("Gyro value", a_Gyro.GetAngle());
 	SmartDashboard::PutNumber("Shooter", a_Shooter.GetPosition());
 	SmartDashboard::PutNumber("Winch", a_Winch.GetLength());
+
+	/*
+	SmartDashboard::PutNumber("Current left 1", a_PDP.GetCurrent(BACK_LEFT_ONE - 10));
+	SmartDashboard::PutNumber("Current left 2", a_PDP.GetCurrent(BACK_LEFT_TWO - 10));
+	SmartDashboard::PutNumber("Current right 1", a_PDP.GetCurrent(BACK_RIGHT_ONE - 10));
+	SmartDashboard::PutNumber("Current right 2", a_PDP.GetCurrent(BACK_RIGHT_TWO - 10));
+	*/
+
 	// printf("Shooter angle value: %6.2f\n", a_Shooter.GetPosition());
 	/* TODO: remove test code
 	 SmartDashboard::PutBoolean("LeftA", a_LeftA.Get());
