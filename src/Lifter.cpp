@@ -13,10 +13,11 @@ double LOWER_TARGET = 46;
 bool movingUpTower = false; // Tape moving up the tower
 bool liftBot = false; // Actually lifting the robot
 
-Lifter::Lifter(int TalonPort, int EncoderAPort, int EncoderBPort, int SwitchPort)
+Lifter::Lifter(int TalonPort, int EncoderAPort, int EncoderBPort, int SwitchPort, int Solenoid1, int Solenoid2)
 :	LifterC(TalonPort),
 	EncoderC(EncoderAPort, EncoderBPort),
-	a_LifterSwitch(SwitchPort)
+	a_LifterSwitch(SwitchPort),
+	a_PleaseDoNotBreakTheBot(Solenoid1, Solenoid2)
 {
 
 }
@@ -72,3 +73,21 @@ void PIDWrite(float output)
 
 }
 
+void Lifter::Shift(int shift)
+{
+	if(shift == 0) {
+		a_PleaseDoNotBreakTheBot.Set(DoubleSolenoid::kReverse);
+	} else {
+		a_PleaseDoNotBreakTheBot.Set(DoubleSolenoid::kForward);
+	}
+}
+
+void Lifter::ShiftOpen()
+{
+	Shift(0);
+}
+
+void Lifter::ShiftClosed()
+{
+	Shift(1);
+}

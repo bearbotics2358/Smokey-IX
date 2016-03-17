@@ -49,8 +49,8 @@
 #define LEFT_SOL_PORT_ONE 0
 #define LEFT_SOL_PORT_TWO 1
 
-#define RIGHT_SOL_PORT_ONE 2
-#define RIGHT_SOL_PORT_TWO 3
+#define WINCH_SOL_PORT_ONE 2
+#define WINCH_SOL_PORT_TWO 3
 
 #define ROBOT_LENGTH 31.0 // This is in inches
 #define ROBOT_PIVOT_POINT 6.5 //From back of frame in inches

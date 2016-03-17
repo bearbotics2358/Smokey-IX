@@ -10,7 +10,7 @@ SmokeyIX::SmokeyIX(void):
 		a_Joystick2(JOYSTICKTWO_PORT),
 		a_PDP(PDP_PORT),
 		a_Compressor(PCM_PORT),
-		a_Winch(WINCH, WINCH_PORT_A, WINCH_PORT_B, WINCH_SWITCH_PORT),
+		a_Winch(WINCH, WINCH_PORT_A, WINCH_PORT_B, WINCH_SWITCH_PORT, WINCH_SOL_PORT_ONE, WINCH_SOL_PORT_TWO),
 		a_Finger(FINGER, FINGER_ENCODER_PORT, 0, 0), // Third argument is our upper limit on the encoder, fourth is our lower limit
 		a_Collector(COLLECTOR, COLLECTOR_ENCODER_PORT, 0, 0), // See above
 		a_CollectorSwitch(COLLECTOR_SWITCH_PORT),
@@ -57,6 +57,7 @@ void SmokeyIX::AutonomousInit()
 	a_Left.ResetEncoder();
 	a_Right.ResetEncoder();
 	tState = 0;
+	a_Left.ShiftHigh();
 	a_TargetDetector.StartProcessing();
 }
 
@@ -104,7 +105,7 @@ void SmokeyIX::AutonomousPeriodic()
 		break;
 	case kMoveUnderLowBar:
 		if (tankDistance < LOW_BAR_CLEAR + LOW_BAR_DISTANCE) {
-			a_Tank.AutonUpdateDriveStraight(-0.35, 0.35); //change to a usable speed
+			a_Tank.AutonUpdateDriveStraight(-0.4, 0.4); //change to a usable speed
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveToShoot;
@@ -121,7 +122,7 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kTurnToShootWait:
-		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
+		if(Timer::GetFPGATimestamp() >= tState + 0.5) {
 			nextState = kTurnToShoot;
 			a_Tank.SetTwistingMode();
 			a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), TURN_ANGLE - 10); // Need to turn further in manual mode- 5 maybe? I think that is right
@@ -138,7 +139,7 @@ void SmokeyIX::AutonomousPeriodic()
 		}
 		break;
 	case kMoveTowardsTowerWait:
-		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
+		if(Timer::GetFPGATimestamp() >= tState + 0.75) {
 			nextState = kMoveTowardsTower;
 			a_Tank.ResetEncoders();
 		}
@@ -213,7 +214,7 @@ void SmokeyIX::AutonomousPeriodic()
 
 		break;
 	case kShootWait:
-		if(Timer::GetFPGATimestamp() >= tState + 2.0) {
+		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kShoot;
 			shooterStart = a_Shooter.GetPosition();
 		}
@@ -228,7 +229,7 @@ void SmokeyIX::AutonomousPeriodic()
 			if(shooterCurrent < shooterStart) {
 				nextState = kAutoIdle;
 				a_Tank.SetTwistingMode();
-				a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), TURN_AROUND_ANGLE - 10);
+				a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), TURN_AROUND_ANGLE - 5);
 			} else {
 				a_Shooter.Fire();
 			}
@@ -292,6 +293,7 @@ void SmokeyIX::TeleopInit()
 	a_Collector.Init();
 	a_TargetDetector.StartProcessing();
 	a_Tank.DisableTwist();
+	a_Winch.ShiftOpen();
 }
 
 void SmokeyIX::TeleopPeriodic()
@@ -300,6 +302,7 @@ void SmokeyIX::TeleopPeriodic()
 	SmartDashboard::PutNumber("Angle to Target", angleToTarget);
 
 	a_Gyro.Update();
+
 	if(a_Joystick2.GetRawButton(6) && a_TargetDetector.CanSeeTarget()) {
 
 		a_Tank.SetTwistingMode();
@@ -327,13 +330,22 @@ void SmokeyIX::TeleopPeriodic()
 
 	a_Collector.Update(a_Joystick, 3, 5, 4, 6, 2);
 
-
+	/*
 	if (a_Joystick2.GetRawButton(4)) {
 		a_Winch.Set(a_Joystick2.GetRawButton(4));
 	} else if (a_Joystick2.GetRawButton(5)) {
 		a_Winch.Set(-1.0 * a_Joystick2.GetRawButton(5));
 	} else {
 		a_Winch.Set(0);
+	}
+	*/
+
+	if(a_Joystick.GetRawButton(4)) {
+		a_Winch.ShiftClosed();
+	}
+
+	if(a_Joystick2.GetRawButton(5)) {
+		a_Winch.Set(a_Joystick2.GetRawAxis(4));
 	}
 
 
