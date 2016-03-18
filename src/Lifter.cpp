@@ -6,6 +6,7 @@
  */
 #include <WPILib.h>
 #include "Lifter.h"
+#include "Prefs.h"
 
 double CONVERSION_FACTOR = 3.5 / 1000; // inches per encoder counts
 double UPPER_TARGET = 64.5;
@@ -17,7 +18,7 @@ Lifter::Lifter(int TalonPort, int EncoderAPort, int EncoderBPort, int SwitchPort
 :	LifterC(TalonPort),
 	EncoderC(EncoderAPort, EncoderBPort),
 	a_LifterSwitch(SwitchPort),
-	a_PleaseDoNotBreakTheBot(Solenoid1, Solenoid2)
+	a_PleaseDoNotBreakTheBot(PCM_PORT, Solenoid1, Solenoid2)
 {
 
 }

@@ -41,6 +41,7 @@ void SmokeyIX::RobotInit()
 {
 	// a_Compressor.SetClosedLoopControl(true);
 	a_LeftSol.Set(DoubleSolenoid::kForward);
+	a_Winch.ShiftOpen();
 	a_Tank.Init();
 }
 
@@ -353,6 +354,8 @@ void SmokeyIX::TeleopPeriodic()
 
 	if(a_Joystick.GetRawButton(9)) {
 		a_Winch.ShiftClosed();
+	} else if(a_Joystick.GetRawButton(10)) {
+		a_Winch.ShiftOpen();
 	}
 
 	if(a_Joystick2.GetRawButton(5)) {
