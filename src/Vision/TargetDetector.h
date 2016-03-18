@@ -22,6 +22,9 @@ public:
 	double GetDistanceToTarget();
 	double GetAngleToTarget();
 
+	void TurnLRCBright();
+	void TurnLRCDown();
+
 private:
 	static constexpr float M1013_HFOV_DEG = 67.0;
 	static constexpr float M1013_VFOV_DEG = 49.3;

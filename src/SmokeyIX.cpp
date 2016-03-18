@@ -48,6 +48,7 @@ void SmokeyIX::DisabledInit()
 {
 	a_Tank.Disable();
 	a_TargetDetector.StopProcessing();
+	a_TargetDetector.TurnLRCDown();
 
 }
 
@@ -61,6 +62,7 @@ void SmokeyIX::AutonomousInit()
 	a_Right.ResetEncoder();
 	tState = 0;
 	a_Left.ShiftHigh();
+	a_TargetDetector.TurnLRCBright();
 	a_TargetDetector.StartProcessing();
 }
 
@@ -292,6 +294,7 @@ void SmokeyIX::TeleopInit()
 	a_Left.DisablePIDControl();
 	a_Right.DisablePIDControl();
 	a_Collector.Init();
+	a_TargetDetector.TurnLRCBright();
 	a_TargetDetector.StartProcessing();
 	a_Tank.DisableTwist();
 	a_Winch.ShiftOpen();
@@ -395,6 +398,7 @@ void SmokeyIX::TestInit()
 	a_LeftSol.Set(DoubleSolenoid::kForward);
 	a_Tank.Enable();
 	a_Tank.DisableTwist();
+	a_TargetDetector.TurnLRCBright();
 }
 
 void SmokeyIX::TestPeriodic()

@@ -367,3 +367,13 @@ void TargetDetector::ImageProcessingTask() {
 		}
 	}
 }
+
+void TargetDetector::TurnLRCBright()
+{
+	a_LightRing.SetColor(0,0,0,255);
+}
+
+void TargetDetector::TurnLRCDown()
+{
+	a_LightRing.SetColor(0,0,0,127);
+}
