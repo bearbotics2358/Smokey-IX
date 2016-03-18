@@ -23,6 +23,7 @@ SmokeyIX::SmokeyIX(void):
 		a_Tank(a_Left,a_Right),
 		a_AutoState(kAutoIdle),
 		a_TargetDetector("10.23.58.11")
+
 		// a_Leonardo(BAUD_RATE, SerialPort::kUSB, DATA_BITS, SerialPort::kParity_None, SerialPort::kStopBits_One)
 {
 	// left encoder is running backwards
@@ -31,6 +32,7 @@ SmokeyIX::SmokeyIX(void):
 	shooterStart = -99;
 	shooterCurrent = 1000000000;
 	angleToT = 0;
+	a_Winch.ShiftOpen();
 	// a_Leonardo.Reset();
 	// a_Leonardo.Write("B", 1);
 }
@@ -46,6 +48,7 @@ void SmokeyIX::DisabledInit()
 {
 	a_Tank.Disable();
 	a_TargetDetector.StopProcessing();
+
 }
 
 void SmokeyIX::AutonomousInit()
@@ -63,13 +66,14 @@ void SmokeyIX::AutonomousInit()
 
 void SmokeyIX::AutonomousPeriodic()
 {
+
 	AutoState nextState = a_AutoState;
 
 	float tankDistance = a_Tank.GetDistance(); // getDistance() already converts to inches
 	SmartDashboard::PutNumber("Tank Distance", tankDistance);
 
 	const double LOW_BAR_DISTANCE = 77.0 - ROBOT_LENGTH - 23; // -23 for extra swag and drift control
-	const double LOW_BAR_CLEAR = 44.0 + ROBOT_LENGTH;
+	const double LOW_BAR_CLEAR = 48.0 + ROBOT_LENGTH;
 	const double TURN_SPOT_DISTANCE = 113.06 - ROBOT_PIVOT_POINT;
 	const double SHOOT_SPOT_DISTANCE = 130.9 - TOWER_DISTANCE;
 	const double TURN_ANGLE = 60.0; // theoretically 60 degrees
@@ -78,9 +82,6 @@ void SmokeyIX::AutonomousPeriodic()
 	const double C_DISTANCE = (sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216));
 	const double TURN_TO_C_ANGLE = 180.0; // check all these angles when testing
 	const double TO_C_DISTANCE = TURN_SPOT_DISTANCE + ROBOT_PIVOT_POINT;
-	/*TODO
-	 * change angle values to relative and implement PID
-	 */
 
 	a_Gyro.Update();
 	float gyroValue = a_Gyro.GetAngle();
@@ -340,7 +341,7 @@ void SmokeyIX::TeleopPeriodic()
 	}
 	*/
 
-	if(a_Joystick.GetRawButton(4)) {
+	if(a_Joystick.GetRawButton(9)) {
 		a_Winch.ShiftClosed();
 	}
 
@@ -398,7 +399,7 @@ void SmokeyIX::TestInit()
 
 void SmokeyIX::TestPeriodic()
 {
-	a_Tank.AutonUpdateDriveStraightTest(-0.35, 0.35, a_Joystick);
+	a_Tank.AutonUpdate(-0.35, 0.35);
 	return;
 
 
