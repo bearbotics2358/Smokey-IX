@@ -375,5 +375,5 @@ void TargetDetector::TurnLRCBright()
 
 void TargetDetector::TurnLRCDown()
 {
-	a_LightRing.SetColor(0,0,0,127);
+	a_LightRing.SetColor(0,0,0,32);
 }
