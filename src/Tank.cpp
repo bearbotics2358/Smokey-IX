@@ -106,6 +106,7 @@ void EtherArcade(double fwd, double rcw, double a, double b, double &out_left, d
 
 void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 {
+
 	if(stick.GetRawButton(11))
 	{
 		a_LeftSide.ShiftHigh();
@@ -133,6 +134,68 @@ void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 		return;
 	}
 
+	double XInput1 = stick.GetX();
+	double XInput2 = stick2.GetRawAxis(0);
+	double YInput1 = stick.GetY();
+	double YInput2 = stick2.GetRawAxis(1);
+
+	// at this time this only applies to the different drive schemes that we actually use
+
+	if(fabs(XInput1) < kJoystickDeadzone) {
+		XInput1 = 0;
+	} else if(XInput1 == 1.0 || XInput1 == -1.0) {
+		// leave it alone- drive it like ya stole it
+	} else { // remove deadzone, push it to the higher end
+		if(XInput1 < 0) {
+			XInput1 += kJoystickDeadzone;
+		} else {
+			XInput1 -= kJoystickDeadzone;
+		}
+	}
+
+	if(fabs(XInput2) < kJoystickDeadzone) {
+		XInput2 = 0;
+	} else if (XInput2 == 1.0 || XInput2 == -1.0){
+		// see above
+	} else {
+		if(XInput2 < 0) {
+			XInput2 += kJoystickDeadzone;
+		} else {
+			XInput2 -= kJoystickDeadzone;
+		}
+	}
+
+	if(fabs(YInput1) < kJoystickDeadzone) {
+		YInput1= 0;
+	} else if (YInput1 == 1.0 || YInput1 == -1.0){
+		// see above
+	} else {
+		if(YInput1 < 0) {
+			YInput1 += kJoystickDeadzone;
+		} else {
+			YInput1 -= kJoystickDeadzone;
+		}
+	}
+
+	if(fabs(YInput2) < kJoystickDeadzone) {
+		YInput2 = 0;
+	} else if (YInput2 == 1.0 || YInput2 == -1.0){
+		// see above
+	} else {
+		if(YInput2 < 0) {
+			YInput2 += kJoystickDeadzone;
+		} else {
+			YInput2 -= kJoystickDeadzone;
+		}
+	}
+
+	if(stick2.GetRawAxis(3) > 0.5) {
+		XInput1 *= 0.8;
+		XInput2 *= 0.8;
+		YInput1 *= 0.8;
+		YInput2 *= 0.8;
+	}
+
 	// Tuning parameters for the arcade drive algorithm
 	double a = SmartDashboard::GetNumber(ARCADE_TUNING_PARAM_A_KEY, ARCADE_TUNING_PARAM_A_DEFAULT);
 	double b = SmartDashboard::GetNumber(ARCADE_TUNING_PARAM_B_KEY, ARCADE_TUNING_PARAM_B_DEFAULT);
@@ -146,19 +209,19 @@ void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 	switch (*controlType)
 	{
 	case CONTROL_TYPE_TANK_TWO_JOYSTICKS:
-		left = stick2.GetY();
-		right = -1.0 * stick.GetY();
+		left = YInput2;
+		right = -1.0 * YInput1;
 		break;
 	case CONTROL_TYPE_TANK_GAMEPAD:
 		left = stick2.GetRawAxis(1);
 		right = -1.0 * stick2.GetRawAxis(4);
 		break;
 	case CONTROL_TYPE_ARCADE_ONE_JOYSTICK:
-		EtherArcade(stick.GetY(), stick.GetX() * -1.0, a, b, left, right);
+		EtherArcade(YInput1, XInput1 * -1.0, a, b, left, right);
 		right *= -1.0;
 		break;
 	case CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK:
-		EtherArcade(pow(0.8 * stick2.GetRawAxis(1), 3), pow(0.8 * stick2.GetRawAxis(0), 3) * -1.0, a, b, left, right);
+		EtherArcade(pow(YInput2, 3), pow(XInput2, 3) * -1.0, a, b, left, right);
 		right *= -1.0;
 		break;
 	case CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS:
@@ -195,15 +258,6 @@ void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 		left = power - left + right;
 		right = -1.0 * (power - right + left);
 		break;
-	}
-
-	if (fabs(left) < kJoystickDeadzone)
-	{
-		left = 0.0;
-	}
-	if (fabs(right) < kJoystickDeadzone)
-	{
-		right = 0.0;
 	}
 
 	SmartDashboard::PutNumber("Left Encoder Distance", a_LeftSide.GetDistance());
