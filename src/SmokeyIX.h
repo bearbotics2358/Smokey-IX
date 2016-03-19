@@ -44,6 +44,17 @@ enum AutoState {
 	kAutoIdle
 };
 
+enum spyAutoState{
+	kSpyDropCollector = 0,
+	kSpyDropCollectorWait,
+	kSpyLoadingBot,
+	kSpyLoadingDownWait,
+	kSpyLoaderDown,
+	kSpyShootWait,
+	kSpyShoot,
+	kSpyAutoIdle
+};
+
 class SmokeyIX : public IterativeRobot {
 public:
 	SmokeyIX(void);
@@ -87,6 +98,7 @@ private:
 	Tank a_Tank;
 
 	AutoState a_AutoState;
+	spyAutoState a_SpyState;
 
 	double tState;
 	int shooterCurrent;

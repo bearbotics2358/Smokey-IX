@@ -22,6 +22,7 @@ SmokeyIX::SmokeyIX(void):
 		a_Right(BACK_RIGHT_ONE, BACK_RIGHT_TWO, a_LeftSol, RIGHT_ENCODER_PORT_A, RIGHT_ENCODER_PORT_B),
 		a_Tank(a_Left,a_Right),
 		a_AutoState(kAutoIdle),
+		a_SpyState(kSpyAutoIdle),
 		a_TargetDetector("10.23.58.11")
 
 		// a_Leonardo(BAUD_RATE, SerialPort::kUSB, DATA_BITS, SerialPort::kParity_None, SerialPort::kStopBits_One)
@@ -57,6 +58,7 @@ void SmokeyIX::AutonomousInit()
 {
 	a_Gyro.Cal();
 	a_AutoState = kDropCollector;
+	a_SpyState = kSpyDropCollector;
 	a_Tank.Enable();
 	a_Collector.Init();
 	a_Collector.SetAngle(90);
@@ -68,7 +70,12 @@ void SmokeyIX::AutonomousInit()
 	a_TargetDetector.StartProcessing();
 }
 
-void SmokeyIX::AutonomousPeriodic()
+void SmokeyIX::AutonomousPeriodic() {
+	AutonomousPeriodicSimple();
+	// AutonomousPeriodicFull();
+}
+
+void SmokeyIX::AutonomousPeriodicFull()
 {
 
 	AutoState nextState = a_AutoState;
@@ -288,7 +295,63 @@ void SmokeyIX::AutonomousPeriodic()
 	}
 
 	a_AutoState = nextState;
+}
 
+void SmokeyIX::AutonomousPeriodicSimple() {
+	spyAutoState SnextState = a_SpyState;
+
+	a_Shooter.Update(a_Joystick);
+
+	switch (a_SpyState) {
+	case kSpyDropCollector:
+		a_Collector.SetAngle(0);
+		SnextState = kSpyDropCollectorWait;
+		break;
+	case kSpyDropCollectorWait:
+		if( fabs(a_Collector.GetAngle()) < 3) {
+			SnextState = kSpyLoadingBot;
+		}
+		break;
+	case kSpyLoadingBot:
+		a_Collector.SetAngle(120.0);
+		if( fabs(a_Collector.GetAngle() - 120.0) < 3) {
+			SnextState = kSpyLoadingDownWait;
+			tState = Timer::GetFPGATimestamp();
+		}
+		break;
+	case kSpyLoadingDownWait:
+		if(Timer::GetFPGATimestamp() >= tState + 0.5) {
+			SnextState = kSpyLoaderDown;
+		}
+		break;
+	case kSpyLoaderDown:
+		a_Collector.SetAngle(0);
+		if( fabs(a_Collector.GetAngle()) < 3) {
+			SnextState = kSpyShootWait;
+			tState = Timer::GetFPGATimestamp();
+		}
+		break;
+	case kSpyShootWait:
+		if(Timer::GetFPGATimestamp() >= tState + 2.0) {
+			SnextState = kSpyShoot;
+			shooterStart = a_Shooter.GetPosition();
+		}
+		break;
+	case kSpyShoot:
+		shooterCurrent = a_Shooter.GetPosition();
+		if(shooterCurrent < shooterStart) {
+			SnextState = kSpyAutoIdle;
+		} else {
+			a_Shooter.Fire();
+		}
+		break;
+	case kSpyAutoIdle:
+		a_Tank.AutonUpdate(0, 0);
+		a_Tank.ResetEncoders();
+		break;
+	}
+
+	a_SpyState = SnextState;
 }
 
 void SmokeyIX::TeleopInit()

@@ -158,7 +158,7 @@ void Tank::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 		right *= -1.0;
 		break;
 	case CONTROL_TYPE_ARCADE_ONE_GAMEPAD_STICK:
-		EtherArcade(pow(stick2.GetRawAxis(1), 3), pow(stick2.GetRawAxis(0), 3) * -1.0, a, b, left, right);
+		EtherArcade(pow(0.8 * stick2.GetRawAxis(1), 3), pow(0.8 * stick2.GetRawAxis(0), 3) * -1.0, a, b, left, right);
 		right *= -1.0;
 		break;
 	case CONTROL_TYPE_ARCADE_TWO_GAMEPAD_STICKS:
