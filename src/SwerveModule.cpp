@@ -7,8 +7,8 @@
 
 #include "SwerveModule.h"
 
-const double ANALOG_CONV_FACTOR = 1024 / 360;
-const double QUAD_SPEED_CONV_FACTOR = 0; // need to talk with someone in order to figure this one out
+const double ANALOG_CONV_FACTOR = 1024.0 / 360.0;
+const double QUAD_SPEED_CONV_FACTOR = 0; // value is in encoder value delta / 10 ms - situational upon bot/ drive type
 
 SwerveModule::SwerveModule(uint32_t turnMotorPort, uint32_t driveMotorPort)
 : a_TurnMotor(turnMotorPort),
@@ -25,7 +25,6 @@ SwerveModule::SwerveModule(uint32_t turnMotorPort, uint32_t driveMotorPort)
 	a_DriveMotor.SetSensorDirection(false);
 	a_DriveMotor.SetPID(1,0,0);
 	a_DriveMotor.Set(0);
-
 }
 
 void SwerveModule::Set(float angle, float speed)
