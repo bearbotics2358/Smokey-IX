@@ -71,8 +71,8 @@ void SmokeyIX::AutonomousInit()
 }
 
 void SmokeyIX::AutonomousPeriodic() {
-	AutonomousPeriodicSimple();
-	// AutonomousPeriodicFull();
+	// AutonomousPeriodicSimple();
+	AutonomousPeriodicFull();
 }
 
 void SmokeyIX::AutonomousPeriodicFull()
@@ -86,7 +86,7 @@ void SmokeyIX::AutonomousPeriodicFull()
 	const double LOW_BAR_DISTANCE = 77.0 - ROBOT_LENGTH - 23; // -23 for extra swag and drift control
 	const double LOW_BAR_CLEAR = 48.0 + ROBOT_LENGTH;
 	const double TURN_SPOT_DISTANCE = 113.06 - ROBOT_PIVOT_POINT;
-	const double SHOOT_SPOT_DISTANCE = 130.9 - TOWER_DISTANCE;
+	const double SHOOT_SPOT_DISTANCE = 0; // 130.9 - TOWER_DISTANCE;
 	const double TURN_ANGLE = 60.0 - 5.0; // theoretically 60 degrees
 	// float adjustAngle;
 	const double TURN_AROUND_ANGLE =  TURN_ANGLE + (180 * M_1_PI) * asin(48.0/(sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216)));
@@ -109,7 +109,7 @@ void SmokeyIX::AutonomousPeriodicFull()
 		break;
 	case kMoveToLowBar:
 		if (tankDistance < LOW_BAR_DISTANCE) {
-			a_Tank.AutonUpdateDriveStraight(-0.55, 0.55);
+			a_Tank.AutonUpdateDriveStraight(-0.60, 0.60);
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveUnderLowBar;
@@ -117,7 +117,7 @@ void SmokeyIX::AutonomousPeriodicFull()
 		break;
 	case kMoveUnderLowBar:
 		if (tankDistance < LOW_BAR_CLEAR + LOW_BAR_DISTANCE) {
-			a_Tank.AutonUpdateDriveStraight(-0.55, 0.55); //change to a usable speed
+			a_Tank.AutonUpdateDriveStraight(-0.60, 0.60); //change to a usable speed
 		} else {
 			a_Tank.AutonUpdate(0, 0);
 			nextState = kMoveToShoot;
@@ -178,7 +178,7 @@ void SmokeyIX::AutonomousPeriodicFull()
 			}
 		break;
 	case kLoaderDownWait:
-		if(Timer::GetFPGATimestamp() >= tState + 0.5) {
+		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kLoaderDown;
 			a_Tank.ResetEncoders();
 		}

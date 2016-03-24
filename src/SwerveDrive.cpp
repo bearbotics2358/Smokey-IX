@@ -22,12 +22,12 @@ SwerveDrive::SwerveDrive(SwerveModule &FR, SwerveModule &FL, SwerveModule &BL, S
 {
 	a_RobotLength = Length;
 	a_RobotWidth = Width;
-	a_ChassisRadius = sqrt(pow(a_RobotLength, 2) + pow(a_RobotWidth,2));
+	a_ChassisRadius = sqrt(pow(a_RobotLength, 2) + pow(a_RobotWidth, 2));
 }
 
 void SwerveDrive::Init()
 {
-	InitSendableChooser(); // please, please, PLEASE call this first- otherwise our drive mode might not initialize properly
+	InitSendableChooser(); // please, please, PLEASE call this first- otherwise our drive mode might not initialize properly, or a function you attempt to call may not work
 }
 
 void SwerveDrive::InitSendableChooser()
