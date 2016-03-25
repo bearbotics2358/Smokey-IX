@@ -86,8 +86,8 @@ void SmokeyIX::AutonomousPeriodicFull()
 	const double LOW_BAR_DISTANCE = 77.0 - ROBOT_LENGTH - 23; // -23 for extra swag and drift control
 	const double LOW_BAR_CLEAR = 48.0 + ROBOT_LENGTH;
 	const double TURN_SPOT_DISTANCE = 113.06 - ROBOT_PIVOT_POINT;
-	const double SHOOT_SPOT_DISTANCE = 6.0; // 130.9 - TOWER_DISTANCE;
-	const double TURN_ANGLE = 60.0 - 5.0; // theoretically 60 degrees
+	const double SHOOT_SPOT_DISTANCE = 9.0; // 130.9 - TOWER_DISTANCE;
+	const double TURN_ANGLE = 60.0 - 5.0 + 1.0; // theoretically 60 degrees
 	// float adjustAngle;
 	const double TURN_AROUND_ANGLE =  TURN_ANGLE + (180 * M_1_PI) * asin(48.0/(sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216)));
 	const double C_DISTANCE = (sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216));
@@ -179,7 +179,7 @@ void SmokeyIX::AutonomousPeriodicFull()
 			}
 		break;
 	case kLoaderDownWait:
-		if(Timer::GetFPGATimestamp() >= tState + 0.25) {
+		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kLoaderDown;
 			a_Tank.ResetEncoders();
 		}
@@ -383,6 +383,14 @@ void SmokeyIX::TeleopPeriodic()
 
 		a_Tank.SetTwistingMode();
 		a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), angleToTarget);
+	}
+
+	if(a_Joystick2.GetPOV() == 90) {
+		a_Tank.SetTwistingMode();
+		a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), 4.5);
+	} else if(a_Joystick2.GetPOV() == 270) {
+		a_Tank.SetTwistingMode();
+		a_Tank.SetTwistingRelAngle(a_Gyro.GetAngle(), -4.5);
 	}
 
 	a_Tank.Update(a_Joystick, a_Joystick2, a_Gyro.GetAngle());
