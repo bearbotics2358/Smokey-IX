@@ -86,7 +86,7 @@ void SmokeyIX::AutonomousPeriodicFull()
 	const double LOW_BAR_DISTANCE = 77.0 - ROBOT_LENGTH - 23; // -23 for extra swag and drift control
 	const double LOW_BAR_CLEAR = 48.0 + ROBOT_LENGTH;
 	const double TURN_SPOT_DISTANCE = 113.06 - ROBOT_PIVOT_POINT;
-	const double SHOOT_SPOT_DISTANCE = 9.0; // 130.9 - TOWER_DISTANCE;
+	const double SHOOT_SPOT_DISTANCE = 130.9 - TOWER_DISTANCE;
 	const double TURN_ANGLE = 60.0 - 5.0 + 1.0; // theoretically 60 degrees
 	// float adjustAngle;
 	const double TURN_AROUND_ANGLE =  TURN_ANGLE + (180 * M_1_PI) * asin(48.0/(sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216)));
@@ -179,12 +179,14 @@ void SmokeyIX::AutonomousPeriodicFull()
 			}
 		break;
 	case kLoaderDownWait:
+		a_Roller.Update(-0.25);
 		if(Timer::GetFPGATimestamp() >= tState + 1.0) {
 			nextState = kLoaderDown;
 			a_Tank.ResetEncoders();
 		}
 		break;
 	case kLoaderDown:
+		a_Roller.Update(0);
 		a_Collector.SetAngle(0);
 		if( fabs(a_Collector.GetAngle()) < 3) {
 			nextState = kShootWait;
