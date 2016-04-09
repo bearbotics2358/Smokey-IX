@@ -87,7 +87,7 @@ void SmokeyIX::AutonomousPeriodicFull()
 	const double LOW_BAR_CLEAR = 48.0 + ROBOT_LENGTH;
 	const double TURN_SPOT_DISTANCE = 113.06 - ROBOT_PIVOT_POINT;
 	const double SHOOT_SPOT_DISTANCE = 130.9 - TOWER_DISTANCE;
-	const double TURN_ANGLE = 60.0 - 5.0 + 1.0; // theoretically 60 degrees
+	const double TURN_ANGLE = 60.0 - 5.0 + 1.0 - 1.0; // theoretically 60 degrees
 	// float adjustAngle;
 	const double TURN_AROUND_ANGLE =  TURN_ANGLE + (180 * M_1_PI) * asin(48.0/(sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216)));
 	const double C_DISTANCE = (sqrt(pow(SHOOT_SPOT_DISTANCE,2) - 96*sqrt(3)*SHOOT_SPOT_DISTANCE + 9216));
