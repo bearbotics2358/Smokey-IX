@@ -44,6 +44,10 @@ void SwerveDrive::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 	float xInput = stick.GetX(); // Strafe
 	float yInput = stick.GetY(); // Forward
 
+	float temp = yInput * cos(gyroValue) + xInput * sin(gyroValue); // This block of commands SHOULD make this thing field oriented
+	xInput = -yInput * sin(gyroValue) + xInput * cos(gyroValue);
+	yInput = temp;
+
 	int *controlType;
 
 	controlType = (int *)a_ControlTypeChooser.GetSelected();
@@ -75,7 +79,7 @@ void SwerveDrive::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 
 	switch (*controlType)
 	{
-	case CONTROL_TYPE_SWERVE: // Thank you, Ether, for agreeing with the math I did
+	case CONTROL_TYPE_SWERVE:
 		frSpeed = sqrt(pow(B,2) + pow(C,2));
 		flSpeed = sqrt(pow(B,2) + pow(D,2));
 		blSpeed = sqrt(pow(A,2) + pow(D,2));
@@ -98,13 +102,54 @@ void SwerveDrive::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 			brSpeed /= max;
 		}
 
-		frAngle = (atan2(C,B) * 180.0 / M_PI) + 180.0; // The + 180.0 is there because atan2() returns -180 to 180, so this makes it 0 to 360
-		flAngle = (atan2(D,B) * 180.0 / M_PI) + 180.0;
-		blAngle = (atan2(D,A) * 180.0 / M_PI) + 180.0;
-		brAngle = (atan2(C,A) * 180.0 / M_PI) + 180.0;
+		//  atan2 outputs values in a manner similar to what is shown on the below diagram
+
+				////////////////////
+				//        0       //
+				//        //      //
+				//		  //      //
+				//		  //      //
+				//-90///////////90//
+				//        //      //
+				//        //      //
+				//        //      //
+				//  -180  or  180 //
+				////////////////////
+
+		frAngle = (atan2(C,B) * 180.0 / M_PI);
+		flAngle = (atan2(D,B) * 180.0 / M_PI);
+		blAngle = (atan2(D,A) * 180.0 / M_PI);
+		brAngle = (atan2(C,A) * 180.0 / M_PI);
+
+		// If on the left side, add 360 to normalize values to the below diagram
+
+				////////////////////
+				//    360 or 0    //
+				//        //      //
+				//		  //      //
+				//		  //      //
+				//270///////////90//
+				//        //      //
+				//        //      //
+				//        //      //
+				//  	 180      //
+				////////////////////
+
+		if(frAngle < 0) {
+			frAngle += 360;
+		}
+		if(flAngle < 0) {
+			flAngle += 360;
+		}
+		if(brAngle < 0) {
+			brAngle += 360;
+		}
+		if(blAngle < 0) {
+			blAngle += 360;
+		}
 		break;
 	case CONTROL_TYPE_CRAB:
-		float setAngle = atan2(yInput,xInput); // find the angle the stick is pointed to, use that for all wheels
+		float setAngle = atan2(yInput,xInput) * 180.0 / M_PI; // find the angle the stick is pointed to, use that for all wheels
 		frAngle = setAngle;
 		flAngle = setAngle;
 		blAngle = setAngle;
