@@ -8,8 +8,8 @@
 #include "SwerveModule.h"
 
 const double ANALOG_CONV_FACTOR = 1024.0 / 360.0;
-const double QUAD_SPEED_CONV_FACTOR = 0; // value is in encoder value delta / 10 ms - situational upon bot/ drive type
-
+const double QUAD_SPEED_CONV_FACTOR = 4 * 40 * 0.0 /60 / 10 ; //situational upon bot/ drive type- max rpm is 0 until we have an actual value
+// 4 * cpr * top revolutions / minute * 1 minute / 60s / 10 = maximum encoder value delta / .1s
 SwerveModule::SwerveModule(uint32_t turnMotorPort, uint32_t driveMotorPort)
 : a_TurnMotor(turnMotorPort),
   a_DriveMotor(driveMotorPort)
@@ -29,6 +29,7 @@ SwerveModule::SwerveModule(uint32_t turnMotorPort, uint32_t driveMotorPort)
 
 void SwerveModule::Set(float angle, float speed)
 {
+
 	if(fabs(angle - GetAngle()) > 180 && angle > 180) {
 		angle -= 180;
 		speed *= -1.0;
@@ -38,12 +39,12 @@ void SwerveModule::Set(float angle, float speed)
 	}
 
 	a_TurnMotor.Set(angle * ANALOG_CONV_FACTOR);
-	a_DriveMotor.Set(speed * QUAD_SPEED_CONV_FACTOR);
+	a_DriveMotor.Set(speed * QUAD_SPEED_CONV_FACTOR); // argument is in encoder value delta / .1s- speed is a percentage of maximum wheel speed
 }
 
 float SwerveModule::GetAngle()
 {
-	return a_TurnMotor.GetPosition();
+	return a_TurnMotor.GetPosition() / ANALOG_CONV_FACTOR;
 }
 
 float SwerveModule::GetSpeed()

@@ -9,6 +9,7 @@
 
 #include <WPILib.h>
 #include <SpeedController.h>
+#include "Prefs.H"
 
 class SwerveModule
 {
