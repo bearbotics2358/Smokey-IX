@@ -8,8 +8,8 @@
 #include "SwerveModule.h"
 
 const double ANALOG_CONV_FACTOR = 1024.0 / 360.0;
-const double QUAD_SPEED_CONV_FACTOR = 4 * 40 * 0.0 /60 / 10 ; //situational upon bot/ drive type- max rpm is 0 until we have an actual value
-// 4 * cpr * top revolutions / minute * 1 minute / 60s / 10 = maximum encoder value delta / .1s
+const double QUAD_SPEED_CONV_FACTOR = 4 * 40 * 4248 /60 / 10 ; //situational upon bot/ drive type- max rpm is 0 until we have an actual value
+// 4 * encoder cpr * max rpm * 1 minute / 60s / 10 = maximum encoder value delta / .1s
 SwerveModule::SwerveModule(uint32_t turnMotorPort, uint32_t driveMotorPort)
 : a_TurnMotor(turnMotorPort),
   a_DriveMotor(driveMotorPort)

@@ -44,8 +44,8 @@ void SwerveDrive::Update(Joystick &stick, Joystick &stick2, float gyroValue)
 	float xInput = stick.GetX(); // Strafe
 	float yInput = stick.GetY(); // Forward
 
-	float temp = yInput * cos(gyroValue) + xInput * sin(gyroValue); // This block of commands SHOULD make this thing field oriented
-	xInput = -yInput * sin(gyroValue) + xInput * cos(gyroValue);
+	float temp = yInput * cos(gyroValue * M_PI / 180) + xInput * sin(gyroValue * M_PI / 180); // This block of commands SHOULD make this thing field oriented
+	xInput = -yInput * sin(gyroValue * M_PI / 180) + xInput * cos(gyroValue * M_PI / 180);
 	yInput = temp;
 
 	int *controlType;
